@@ -20,8 +20,6 @@ namespace UniT.Data.Storage.DI
 
         public static void BindExternalDataStorages(this DiContainer container)
         {
-            container.BindInterfacesTo<ExternalFileVersionManager>().AsSingle();
-
             container.BindInterfacesAndSelfTo<ExternalBinaryDataStorage>().AsSingle();
             container.BindInterfacesAndSelfTo<ExternalTextDataStorage>().AsSingle();
         }

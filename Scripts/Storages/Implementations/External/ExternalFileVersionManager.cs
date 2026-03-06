@@ -72,7 +72,7 @@ namespace UniT.Data.Storage
 
             try
             {
-                this.zipFile = this.ValidateZipFile(this.ZipFilePath);
+                this.zipFile = this.ValidateZipFile(this.Version, this.ZipFilePath);
             }
             catch (Exception e)
             {
@@ -85,7 +85,7 @@ namespace UniT.Data.Storage
             this.logger.Debug("Validated");
         }
 
-        protected abstract ZipArchive? ValidateZipFile(string zipFilePath);
+        protected abstract ZipArchive ValidateZipFile(string version, string zipFilePath);
 
         #endregion
 
