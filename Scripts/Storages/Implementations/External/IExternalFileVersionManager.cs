@@ -2,6 +2,7 @@
 namespace UniT.Data.Storage
 {
     using System;
+    using System.IO;
     #if UNIT_UNITASK
     using System.Threading;
     using Cysharp.Threading.Tasks;
@@ -11,25 +12,12 @@ namespace UniT.Data.Storage
 
     public interface IExternalFileVersionManager
     {
-        public string? GetFilePath(string name);
+        public Stream? GetFile(string name);
 
         #if UNIT_UNITASK
-        public UniTask<string?> GetFilePathAsync(string name, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
+        public UniTask<Stream?> GetFileAsync(string name, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
         #else
-        public IEnumerator GetFilePathAsync(string name, Action<string?> callback, IProgress<float>? progress = null);
-        #endif
-    }
-
-    public interface IExternalFileVersionManagerConfig
-    {
-        #if UNIT_UNITASK
-        public UniTask<string> FetchVersionAsync(IProgress<float>? progress = null, CancellationToken cancellationToken = default);
-
-        public UniTask DownloadFileAsync(string version, string savePath, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
-        #else
-        public IEnumerator FetchVersionAsync(Action<string> callback, IProgress<float>? progress = null);
-
-        public IEnumerator DownloadFileAsync(string version, string savePath, Action? callback = null, IProgress<float>? progress = null);
+        public IEnumerator GetFileAsync(string name, Action<Stream?> callback, IProgress<float>? progress = null);
         #endif
     }
 }
