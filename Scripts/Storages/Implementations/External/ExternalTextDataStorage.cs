@@ -30,44 +30,40 @@ namespace UniT.Data.Storage
 
         public override string? Read(string key)
         {
-            using var stream = this.externalFileVersionManager.GetFile(key);
-            if (stream is null)
+            var path = this.externalFileVersionManager.GetFilePath(key);
+            if (path is null)
             {
                 this.logger.Warning($"{key} not found, fallback to local asset");
                 return this.assetTextDataStorage.Read(key);
             }
-            using var reader = new StreamReader(stream);
-            return reader.ReadToEnd();
+            return File.ReadAllText(path);
         }
 
         #if UNIT_UNITASK
         public override async UniTask<string?> ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            var             subProgresses = progress.CreateSubProgresses(2).ToArray();
-            await using var stream        = await this.externalFileVersionManager.GetFileAsync(key, subProgresses[0], cancellationToken);
-            if (stream is null)
+            var subProgresses = progress.CreateSubProgresses(2).ToArray();
+            var path          = await this.externalFileVersionManager.GetFilePathAsync(key, subProgresses[0], cancellationToken);
+            if (path is null)
             {
                 this.logger.Warning($"{key} not found, fallback to local asset");
                 return await this.assetTextDataStorage.ReadAsync(key, subProgresses[1], cancellationToken);
             }
-            using var reader = new StreamReader(stream);
-            return await reader.ReadToEndAsync();
+            return await File.ReadAllTextAsync(path, cancellationToken);
         }
         #else
         public override IEnumerator ReadAsync(string key, Action<string?> callback, IProgress<float>? progress)
         {
             var subProgresses = progress.CreateSubProgresses(2).ToArray();
-            var s             = default(Stream);
-            yield return this.externalFileVersionManager.GetFileAsync(key, result => s = result, subProgresses[0]);
-            using var stream = s;
-            if (stream is null)
+            var path          = default(string);
+            yield return this.externalFileVersionManager.GetFilePathAsync(key, result => path = result, subProgresses[0]);
+            if (path is null)
             {
                 this.logger.Warning($"{key} not found, fallback to local asset");
                 yield return this.assetTextDataStorage.ReadAsync(key, callback, subProgresses[1]);
                 yield break;
             }
-            using var reader = new StreamReader(stream);
-            yield return reader.ReadToEndAsync().ToCoroutine(callback);
+            yield return File.ReadAllTextAsync(path).ToCoroutine(callback);
         }
         #endif
     }
