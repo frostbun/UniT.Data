@@ -98,6 +98,7 @@ namespace UniT.Data.Storage
             yield return File.WriteAllTextAsync(path, value).ToCoroutine();
             #endif
             callback?.Invoke();
+            yield break;
         }
 
         public override IEnumerator FlushAsync(Action? callback, IProgress<float>? progress)
