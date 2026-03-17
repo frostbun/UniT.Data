@@ -5,6 +5,7 @@ namespace UniT.Data.Conversion
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using UniT.Extensions;
     using UnityEngine.Scripting;
 
     /// <summary>
@@ -55,11 +56,13 @@ namespace UniT.Data.Conversion
             var valueConverter = this.Manager.GetConverter(valueType);
             return this.Manager.ConvertToString(
                 ((IDictionary)obj).Cast<DictionaryEntry>()
-                .Select(kv => string.Concat(
-                    keyConverter.ConvertToString(kv.Key, keyType),
-                    this.separator,
-                    valueConverter.ConvertToString(kv.Value, valueType)
-                ))
+                .Select(
+                    (kv, state) => state.separator.Wrap(
+                        state.keyConverter.ConvertToString(kv.Key, state.keyType),
+                        state.valueConverter.ConvertToString(kv.Value, state.valueType)
+                    ),
+                    (this.separator, keyConverter, keyType, valueConverter, valueType)
+                )
                 .ToArray(),
                 ArrayType
             );

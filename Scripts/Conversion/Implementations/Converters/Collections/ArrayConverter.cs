@@ -41,7 +41,7 @@ namespace UniT.Data.Conversion
             var elementType      = type.GetElementType()!;
             var elementConverter = this.Manager.GetConverter(elementType);
             return ((Array)obj).Cast<object>()
-                .Select(element => elementConverter.ConvertToString(element, elementType))
+                .Select((element, state) => state.elementConverter.ConvertToString(element, state.elementType), (elementConverter, elementType))
                 .Join(this.separator);
         }
     }

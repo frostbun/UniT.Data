@@ -82,34 +82,34 @@ namespace UniT.Data
 
         private void Update(string[] keys, object[] datas)
         {
-            IterTools.Zip(keys, datas).ForEach((key, data) =>
+            foreach (var (key, data) in IterTools.Zip(keys, datas))
             {
                 this.dataCache[key] = data;
                 this.logger.Debug($"Updated {key}");
-            });
+            }
         }
 
         private void Save(IEnumerable<string> keys)
         {
-            keys.ForEach(key =>
+            foreach (var key in keys)
             {
                 if (!this.dataCache.TryGetValue(key, out var data))
                 {
                     this.logger.Warning($"Trying to save {key} that was not loaded");
-                    return;
+                    continue;
                 }
                 var (serializer, storage) = this.GetSerializerAndStorage(data.GetType());
                 if (storage is not IWritableDataStorage writableStorage) throw new InvalidOperationException($"{key} is not writable");
                 var rawData = serializer.Serialize(data);
                 writableStorage.Write(key, rawData);
                 this.logger.Debug($"Saved {key}");
-            });
+            }
         }
 
         private void Flush(IEnumerable<string> keys)
         {
             keys.Where(this.dataCache.ContainsKey)
-                .Select(key => this.GetSerializerAndStorage(this.dataCache[key].GetType()).Storage)
+                .Select((key, @this) => @this.GetSerializerAndStorage(@this.dataCache[key].GetType()).Storage, this)
                 .Distinct()
                 .ForEach(storage =>
                 {
@@ -186,7 +186,7 @@ namespace UniT.Data
         private UniTask FlushAsync(IEnumerable<string> keys, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             return keys.Where(this.dataCache.ContainsKey)
-                .Select(key => this.GetSerializerAndStorage(this.dataCache[key].GetType()).Storage)
+                .Select((key, @this) => @this.GetSerializerAndStorage(@this.dataCache[key].GetType()).Storage, this)
                 .Distinct()
                 .ForEachAsync(
                     async (storage, progress, cancellationToken) =>
@@ -263,7 +263,7 @@ namespace UniT.Data
         private IEnumerator FlushAsync(IEnumerable<string> keys, Action? callback, IProgress<float>? progress)
         {
             return keys.Where(this.dataCache.ContainsKey)
-                .Select(key => this.GetSerializerAndStorage(this.dataCache[key].GetType()).Storage)
+                .Select((key, @this) => @this.GetSerializerAndStorage(@this.dataCache[key].GetType()).Storage, this)
                 .Distinct()
                 .ForEachAsync(FlushAsync, callback, progress);
 
@@ -279,21 +279,21 @@ namespace UniT.Data
 
         #region Private
 
-        private IEnumerable<string> WritableKeys => this.dataCache.WhereValue(data => this.GetSerializerAndStorage(data.GetType()).Storage is IWritableDataStorage).SelectKeys();
+        private IEnumerable<string> WritableKeys => this.dataCache.WhereValue((data, @this) => @this.GetSerializerAndStorage(data.GetType()).Storage is IWritableDataStorage, this).SelectKeys();
 
         private (ISerializer Serializer, IDataStorage Storage) GetSerializerAndStorage(Type type)
         {
-            return this.serializerAndStorageCache.GetOrAdd(type, () =>
+            return this.serializerAndStorageCache.GetOrAdd(type, state =>
             {
                 var serializersAndStorages = IterTools.Product(
-                        this.serializers.Where(serializer => serializer.CanSerialize(type)),
-                        this.storages.Where(storage => storage.CanStore(type))
+                        state.@this.serializers.Where((serializer, type) => serializer.CanSerialize(type), state.type),
+                        state.@this.storages.Where((storage,       type) => storage.CanStore(type), state.type)
                     )
                     .Where((serializer, storage) => serializer.RawDataType == storage.RawDataType)
                     .ToArray();
-                if (serializersAndStorages.Length is 0) throw new InvalidOperationException($"No serializer or storage found for {type.Name}");
+                if (serializersAndStorages.Length is 0) throw new InvalidOperationException($"No serializer or storage found for {state.type.Name}");
                 return serializersAndStorages[^1];
-            });
+            }, (@this: this, type));
         }
 
         #endregion

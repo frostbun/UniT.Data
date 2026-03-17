@@ -17,17 +17,18 @@ namespace UniT.Data.Conversion
         public ConverterManager(IEnumerable<IConverter> converters)
         {
             this.converters = converters.ToArray();
-            this.converters.ForEach(converter => converter.Manager = this);
+            foreach (var converter in this.converters) converter.Manager = this;
         }
 
         IConverter IConverterManager.GetConverter(Type type)
         {
             lock (this.converterCache)
             {
-                return this.converterCache.GetOrAdd(type, () =>
-                    this.converters.LastOrDefault(converter => converter.CanConvert(type))
-                    ?? throw new ArgumentOutOfRangeException(nameof(type), type, $"No converter found for {type.Name}")
-                );
+                return this.converterCache.GetOrAdd(type, state =>
+                {
+                    return state.converters.LastOrDefault(converter => converter.CanConvert(state.type))
+                        ?? throw new ArgumentOutOfRangeException(nameof(state.type), state.type, $"No converter found for {state.type.Name}");
+                }, (this.converters, type));
             }
         }
     }

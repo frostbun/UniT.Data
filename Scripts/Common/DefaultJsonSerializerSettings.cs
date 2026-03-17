@@ -48,7 +48,7 @@ namespace UniT.Data
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
                 return properties
-                    .Where(property => property.Writable || propertyNames.Contains(property.PropertyName!))
+                    .Where((property, propertyNames) => property.Writable || propertyNames.Contains(property.PropertyName!), propertyNames)
                     .ToArray();
             }
         }

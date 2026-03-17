@@ -88,18 +88,18 @@ namespace UniT.Data.Serialization
                 var (normalFields, nestedFields) = rowType.GetCsvFields();
                 this.keyField                    = normalFields.FirstOrDefault(field => key.IsNullOrWhiteSpace() || field.GetCsvColumn(prefix) == key) ?? throw new InvalidOperationException($"{rowType.Name} has no field {key}");
                 this.normalFields = normalFields
-                    .Select(field =>
+                    .Select((field, state) =>
                     {
-                        var column = field.GetCsvColumn(prefix);
-                        var index  = reader.GetFieldIndex(column);
+                        var column = field.GetCsvColumn(state.prefix);
+                        var index  = state.reader.GetFieldIndex(column);
                         return (field, column, index);
-                    })
-                    .Where((field, column, index) =>
+                    }, (prefix, reader))
+                    .Where((field, column, index, rowType) =>
                     {
                         if (index >= 0) return true;
                         if (field.IsCsvOptional()) return false;
                         throw new InvalidOperationException($"Column {column} not found in {rowType.Name}. If this is intentional, add [CsvIgnore] or [CsvOptional] attribute to the field.");
-                    })
+                    }, rowType)
                     .ToDictionary(
                         (field, _, _) => field,
                         (field, _, index) => (index, this.converterManager.GetConverter(field.FieldType))
@@ -135,13 +135,13 @@ namespace UniT.Data.Serialization
 
                 foreach (var field in this.nestedFields)
                 {
-                    this.nestedPopulators.GetOrAdd(field, () =>
+                    this.nestedPopulators.GetOrAdd(field, state =>
                     {
-                        var nestedData      = (ICsvData)field.FieldType.GetEmptyConstructor()();
-                        var nestedPopulator = new Populator(this.converterManager, nestedData, this.reader);
-                        field.SetValue(row, nestedData);
+                        var nestedData      = (ICsvData)state.field.FieldType.GetEmptyConstructor()();
+                        var nestedPopulator = new Populator(state.@this.converterManager, nestedData, state.@this.reader);
+                        state.field.SetValue(state.row, nestedData);
                         return nestedPopulator;
-                    }).Populate();
+                    }, (@this: this, field, row)).Populate();
                 }
             }
         }
@@ -168,7 +168,7 @@ namespace UniT.Data.Serialization
                 var rowType = data.RowType;
                 var (prefix, _)                  = rowType.GetCsvRow();
                 var (normalFields, nestedFields) = rowType.GetCsvFields();
-                this.headers                     = normalFields.Select(field => field.GetCsvColumn(prefix)).ToArray();
+                this.headers                     = normalFields.Select((field, prefix) => field.GetCsvColumn(prefix), prefix).ToArray();
                 this.normalFields = normalFields.ToDictionary(
                     field => field,
                     field => this.converterManager.GetConverter(field.FieldType)
@@ -204,7 +204,7 @@ namespace UniT.Data.Serialization
                 {
                     var serializer = this.nestedSerializers[field] = new Serializer(this.converterManager, (ICsvData)field.GetValue(row), this.writer);
                     serializer.MoveNext();
-                    this.nestedHeaders.TryAdd(field, () => serializer.GetHeaders().ToArray());
+                    this.nestedHeaders.TryAdd(field, serializer => serializer.GetHeaders().ToArray(), serializer);
                 }
                 return true;
             }
