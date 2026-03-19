@@ -16,7 +16,8 @@ namespace UniT.Data.DI
             builder.RegisterLoggerManager();
             builder.RegisterConverterManager();
             builder.RegisterSerializers();
-            builder.RegisterDataStorages();
+            builder.RegisterAssetDataStorages();
+            builder.RegisterFileDataStorages();
             builder.Register<DataManager>(Lifetime.Singleton).AsImplementedInterfaces();
         }
     }

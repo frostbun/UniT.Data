@@ -44,6 +44,11 @@
       "name": "org.nuget.messagepack",
       "expression": "",
       "define": "UNIT_MESSAGEPACK"
+    },
+    {
+      "name": "org.nuget.google.protobuf",
+      "expression": "",
+      "define": "UNIT_PROTOBUF"
     }
   ]
 }

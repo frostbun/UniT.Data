@@ -16,7 +16,8 @@ namespace UniT.Data.DI
             container.AddLoggerManager();
             container.AddConverterManager();
             container.AddSerializers();
-            container.AddDataStorages();
+            container.AddAssetDataStorages();
+            container.AddFileDataStorages();
             container.AddInterfaces<DataManager>();
         }
     }

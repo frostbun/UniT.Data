@@ -17,7 +17,7 @@ namespace UniT.Data.Storage
     using UnityEditor;
     #endif
 
-    public sealed class AssetTextDataStorage : EditorWritableDataStorage<string>
+    public class AssetTextDataStorage : EditorWritableDataStorage<string>
     {
         private readonly IAssetsManager assetsManager;
 
@@ -27,7 +27,7 @@ namespace UniT.Data.Storage
             this.assetsManager = assetsManager;
         }
 
-        public override string? Read(string key)
+        public sealed override string? Read(string key)
         {
             var asset = this.assetsManager.Load<TextAsset>(key);
             var text  = asset.text;
@@ -35,7 +35,7 @@ namespace UniT.Data.Storage
             return text.NullIfWhiteSpace();
         }
 
-        public override void Write(string key, string value)
+        public sealed override void Write(string key, string value)
         {
             #if UNITY_EDITOR
             var asset = this.assetsManager.Load<TextAsset>(key);
@@ -45,7 +45,7 @@ namespace UniT.Data.Storage
             #endif
         }
 
-        public override void Flush()
+        public sealed override void Flush()
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
@@ -53,7 +53,7 @@ namespace UniT.Data.Storage
         }
 
         #if UNIT_UNITASK
-        public override async UniTask<string?> ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
+        public sealed override async UniTask<string?> ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             var asset = await this.assetsManager.LoadAsync<TextAsset>(key, progress, cancellationToken);
             var text = asset.text;
@@ -61,7 +61,7 @@ namespace UniT.Data.Storage
             return text.NullIfWhiteSpace();
         }
 
-        public override async UniTask WriteAsync(string key, string value, IProgress<float>? progress, CancellationToken cancellationToken)
+        public sealed override async UniTask WriteAsync(string key, string value, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             #if UNITY_EDITOR
             var asset = await this.assetsManager.LoadAsync<TextAsset>(key, progress, cancellationToken);
@@ -71,7 +71,7 @@ namespace UniT.Data.Storage
             #endif
         }
 
-        public override UniTask FlushAsync(IProgress<float>? progress, CancellationToken cancellationToken)
+        public sealed override UniTask FlushAsync(IProgress<float>? progress, CancellationToken cancellationToken)
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
@@ -79,7 +79,7 @@ namespace UniT.Data.Storage
             return UniTask.CompletedTask;
         }
         #else
-        public override IEnumerator ReadAsync(string key, Action<string?> callback, IProgress<float>? progress)
+        public sealed override IEnumerator ReadAsync(string key, Action<string?> callback, IProgress<float>? progress)
         {
             var asset = default(TextAsset)!;
             yield return this.assetsManager.LoadAsync<TextAsset>(key, result => asset = result, progress);
@@ -88,7 +88,7 @@ namespace UniT.Data.Storage
             callback(text.NullIfWhiteSpace());
         }
 
-        public override IEnumerator WriteAsync(string key, string value, Action? callback, IProgress<float>? progress)
+        public sealed override IEnumerator WriteAsync(string key, string value, Action? callback, IProgress<float>? progress)
         {
             #if UNITY_EDITOR
             var asset = default(TextAsset)!;
@@ -101,7 +101,7 @@ namespace UniT.Data.Storage
             yield break;
         }
 
-        public override IEnumerator FlushAsync(Action? callback, IProgress<float>? progress)
+        public sealed override IEnumerator FlushAsync(Action? callback, IProgress<float>? progress)
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();

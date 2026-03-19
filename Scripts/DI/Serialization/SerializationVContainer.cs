@@ -2,13 +2,13 @@
 #nullable enable
 namespace UniT.Data.Serialization.DI
 {
-    using System.Globalization;
     using VContainer;
     #if UNIT_JSON
     using Newtonsoft.Json;
     using JsonSerializer = JsonSerializer;
     #endif
     #if UNIT_CSV
+    using System.Globalization;
     using CsvHelper.Configuration;
     #endif
     #if UNIT_MEMORYPACK
@@ -60,6 +60,10 @@ namespace UniT.Data.Serialization.DI
                 builder.RegisterInstance(MessagePackSerializerOptions.Standard);
             }
             builder.Register<MessagePackSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            #endif
+
+            #if UNIT_PROTOBUF
+            builder.Register<ProtobufSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             #endif
         }
     }

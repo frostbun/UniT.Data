@@ -16,7 +16,8 @@ namespace UniT.Data.DI
             container.BindLoggerManager();
             container.BindConverterManager();
             container.BindSerializers();
-            container.BindDataStorages();
+            container.BindAssetDataStorages();
+            container.BindFileDataStorages();
             container.BindInterfacesTo<DataManager>().AsSingle();
         }
     }

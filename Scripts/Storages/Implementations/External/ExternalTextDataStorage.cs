@@ -14,7 +14,7 @@ namespace UniT.Data.Storage
     using System.Collections;
     #endif
 
-    public sealed class ExternalTextDataStorage : DataStorage<string>
+    public class ExternalTextDataStorage : DataStorage<string>
     {
         private readonly IExternalFileVersionManager externalFileVersionManager;
         private readonly AssetTextDataStorage        assetTextDataStorage;
@@ -28,7 +28,7 @@ namespace UniT.Data.Storage
             this.logger                     = loggerManager.GetLogger(this);
         }
 
-        public override string? Read(string key)
+        public sealed override string? Read(string key)
         {
             var path = this.externalFileVersionManager.GetFilePath(key);
             if (path is null)
@@ -40,7 +40,7 @@ namespace UniT.Data.Storage
         }
 
         #if UNIT_UNITASK
-        public override async UniTask<string?> ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
+        public sealed override async UniTask<string?> ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             var subProgresses = progress.CreateSubProgresses(2).ToArray();
             var path          = await this.externalFileVersionManager.GetFilePathAsync(key, subProgresses[0], cancellationToken);
@@ -52,7 +52,7 @@ namespace UniT.Data.Storage
             return await File.ReadAllTextAsync(path, cancellationToken);
         }
         #else
-        public override IEnumerator ReadAsync(string key, Action<string?> callback, IProgress<float>? progress)
+        public sealed override IEnumerator ReadAsync(string key, Action<string?> callback, IProgress<float>? progress)
         {
             var subProgresses = progress.CreateSubProgresses(2).ToArray();
             var path          = default(string);

@@ -2,13 +2,13 @@
 #nullable enable
 namespace UniT.Data.Serialization.DI
 {
-    using System.Globalization;
     using Zenject;
     #if UNIT_JSON
     using Newtonsoft.Json;
     using JsonSerializer = JsonSerializer;
     #endif
     #if UNIT_CSV
+    using System.Globalization;
     using CsvHelper.Configuration;
     #endif
     #if UNIT_MEMORYPACK
@@ -60,6 +60,10 @@ namespace UniT.Data.Serialization.DI
                 container.BindInstance(MessagePackSerializerOptions.Standard);
             }
             container.BindInterfacesAndSelfTo<MessagePackSerializer>().AsSingle();
+            #endif
+
+            #if UNIT_PROTOBUF
+            container.BindInterfacesAndSelfTo<ProtobufSerializer>().AsSingle();
             #endif
         }
     }

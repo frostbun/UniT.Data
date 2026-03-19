@@ -14,7 +14,7 @@ namespace UniT.Data.Storage
     using System.Collections;
     #endif
 
-    public sealed class ExternalBinaryDataStorage : DataStorage<byte[]>
+    public class ExternalBinaryDataStorage : DataStorage<byte[]>
     {
         private readonly IExternalFileVersionManager externalFileVersionManager;
         private readonly AssetBinaryDataStorage      assetBinaryDataStorage;
@@ -28,7 +28,7 @@ namespace UniT.Data.Storage
             this.logger                     = loggerManager.GetLogger(this);
         }
 
-        public override byte[]? Read(string key)
+        public sealed override byte[]? Read(string key)
         {
             var path = this.externalFileVersionManager.GetFilePath(key);
             if (path is null)
@@ -40,7 +40,7 @@ namespace UniT.Data.Storage
         }
 
         #if UNIT_UNITASK
-        public override async UniTask<byte[]?> ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
+        public sealed override async UniTask<byte[]?> ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             var subProgresses = progress.CreateSubProgresses(2).ToArray();
             var path          = await this.externalFileVersionManager.GetFilePathAsync(key, subProgresses[0], cancellationToken);
@@ -52,7 +52,7 @@ namespace UniT.Data.Storage
             return await File.ReadAllBytesAsync(path, cancellationToken);
         }
         #else
-        public override IEnumerator ReadAsync(string key, Action<byte[]?> callback, IProgress<float>? progress)
+        public sealed override IEnumerator ReadAsync(string key, Action<byte[]?> callback, IProgress<float>? progress)
         {
             var subProgresses = progress.CreateSubProgresses(2).ToArray();
             var path          = default(string);
