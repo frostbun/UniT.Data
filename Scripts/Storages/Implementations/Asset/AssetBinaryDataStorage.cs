@@ -29,19 +29,29 @@ namespace UniT.Data.Storage
 
         public sealed override byte[]? Read(string key)
         {
+            #if !UNITY_WEBGL
             var asset = this.assetsManager.Load<TextAsset>(key);
             var bytes = asset.bytes;
             this.assetsManager.Unload(key);
             return bytes.Length > 0 ? bytes : null;
+            #else
+            throw new NotSupportedException("Cannot `Read` synchronously on WebGL. Use `ReadAsync` instead.");
+            #endif
         }
 
         public sealed override void Write(string key, byte[] value)
         {
             #if UNITY_EDITOR
+            #if !UNITY_WEBGL
             var asset = this.assetsManager.Load<TextAsset>(key);
             var path  = AssetDatabase.GetAssetPath(asset);
             this.assetsManager.Unload(key);
             File.WriteAllBytes(path, value);
+            #else
+            throw new NotSupportedException("Cannot `Write` synchronously on WebGL. Use `ReadAsync` instead.");
+            #endif
+            #else
+            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
             #endif
         }
 
@@ -49,6 +59,8 @@ namespace UniT.Data.Storage
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
+            #else
+            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
             #endif
         }
 
@@ -68,6 +80,8 @@ namespace UniT.Data.Storage
             var path = AssetDatabase.GetAssetPath(asset);
             this.assetsManager.Unload(key);
             await File.WriteAllBytesAsync(path, value, cancellationToken);
+            #else
+            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
             #endif
         }
 
@@ -75,8 +89,10 @@ namespace UniT.Data.Storage
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
-            #endif
             return UniTask.CompletedTask;
+            #else
+            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
+            #endif
         }
         #else
         public sealed override IEnumerator ReadAsync(string key, Action<byte[]?> callback, IProgress<float>? progress)
@@ -96,18 +112,22 @@ namespace UniT.Data.Storage
             var path = AssetDatabase.GetAssetPath(asset);
             this.assetsManager.Unload(key);
             yield return File.WriteAllBytesAsync(path, value).ToCoroutine();
-            #endif
             callback?.Invoke();
             yield break;
+            #else
+            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
+            #endif
         }
 
         public sealed override IEnumerator FlushAsync(Action? callback, IProgress<float>? progress)
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
-            #endif
             callback?.Invoke();
             yield break;
+            #else
+            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
+            #endif
         }
         #endif
     }

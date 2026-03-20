@@ -27,17 +27,27 @@ namespace UniT.Data.Storage
 
         public sealed override Object? Read(string key)
         {
+            #if !UNITY_WEBGL
             return this.assetsManager.Load<Object>(key);
+            #else
+            throw new NotSupportedException("Cannot `Read` synchronously on WebGL. Use `ReadAsync` instead.");
+            #endif
         }
 
         public sealed override void Write(string key, Object value)
         {
+            #if UNITY_EDITOR
+            #else
+            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
+            #endif
         }
 
         public sealed override void Flush()
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
+            #else
+            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
             #endif
         }
 
@@ -49,15 +59,21 @@ namespace UniT.Data.Storage
 
         public sealed override UniTask WriteAsync(string key, Object value, IProgress<float>? progress, CancellationToken cancellationToken)
         {
+            #if UNITY_EDITOR
             return UniTask.CompletedTask;
+            #else
+            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
+            #endif
         }
 
         public sealed override UniTask FlushAsync(IProgress<float>? progress, CancellationToken cancellationToken)
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
-            #endif
             return UniTask.CompletedTask;
+            #else
+            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
+            #endif
         }
         #else
         public sealed override IEnumerator ReadAsync(string key, Action<Object?> callback, IProgress<float>? progress)
@@ -67,16 +83,22 @@ namespace UniT.Data.Storage
 
         public sealed override IEnumerator WriteAsync(string key, Object value, Action? callback, IProgress<float>? progress)
         {
+            #if UNITY_EDITOR
             yield break;
+            #else
+            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
+            #endif
         }
 
         public sealed override IEnumerator FlushAsync(Action? callback, IProgress<float>? progress)
         {
             #if UNITY_EDITOR
             AssetDatabase.Refresh();
-            #endif
             callback?.Invoke();
             yield break;
+            #else
+            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
+            #endif
         }
         #endif
     }
