@@ -20,6 +20,8 @@ namespace UniT.Data
 
         public void Update(string[] keys, object[] datas);
 
+        public void Unload(string[] keys);
+
         public void Save(string[] keys);
 
         public void Flush(string[] keys);
@@ -54,6 +56,8 @@ namespace UniT.Data
 
         public void Update(object[] datas) => this.Update(GetKeys(datas.Select(data => data.GetType()).ToArray()), datas);
 
+        public void Unload(Type[] types) => this.Unload(GetKeys(types));
+
         public void Save(Type[] types) => this.Save(GetKeys(types));
 
         public void Flush(Type[] types) => this.Flush(GetKeys(types));
@@ -73,6 +77,8 @@ namespace UniT.Data
         public object Load(string key, Type type, bool cache = true) => this.Load(new[] { key }, new[] { type }, cache)[0];
 
         public void Update(string key, object data) => this.Update(new[] { key }, new[] { data });
+
+        public void Unload(string key) => this.Unload(new[] { key });
 
         public void Save(string key) => this.Save(new[] { key });
 
@@ -98,6 +104,8 @@ namespace UniT.Data
 
         public void Update(object data) => this.Update(data.GetType().GetKey(), data);
 
+        public void Unload(Type type) => this.Unload(type.GetKey());
+
         public void Save(Type type) => this.Save(type.GetKey());
 
         public void Flush(Type type) => this.Flush(type.GetKey());
@@ -111,6 +119,8 @@ namespace UniT.Data
         public T Load<T>(bool cache = true) => (T)this.Load(typeof(T).GetKey(), typeof(T), cache);
 
         public void Update<T>(T data) where T : notnull => this.Update(typeof(T).GetKey(), data);
+
+        public void Unload<T>() => this.Unload(typeof(T).GetKey());
 
         public void Save<T>() => this.Save(typeof(T).GetKey());
 

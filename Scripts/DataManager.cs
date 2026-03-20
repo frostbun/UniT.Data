@@ -44,6 +44,8 @@ namespace UniT.Data
 
         void IDataManager.Update(string[] keys, object[] datas) => this.Update(keys, datas);
 
+        void IDataManager.Unload(string[] keys) => this.Unload(keys);
+
         void IDataManager.Save(string[] keys) => this.Save(keys);
 
         void IDataManager.Flush(string[] keys) => this.Flush(keys);
@@ -86,6 +88,21 @@ namespace UniT.Data
             {
                 this.dataCache[key] = data;
                 this.logger.Debug($"Updated {key}");
+            }
+        }
+
+        private void Unload(string[] keys)
+        {
+            foreach (var key in keys.AsSpan())
+            {
+                if (this.dataCache.Remove(key))
+                {
+                    this.logger.Debug($"Unloaded {key}");
+                }
+                else
+                {
+                    this.logger.Warning($"Trying to unload {key} that was not loaded");
+                }
             }
         }
 
