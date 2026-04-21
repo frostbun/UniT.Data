@@ -7,17 +7,25 @@ namespace UniT.Data.Serialization.DI
     using Newtonsoft.Json;
     using JsonSerializer = JsonSerializer;
     #endif
+    #if UNIT_YAML
+    using SharpYaml;
+    using YamlSerializer = YamlSerializer;
+    #endif
+    #if UNIT_TOML
+    using Tomlyn;
+    using TomlSerializer = TomlSerializer;
+    #endif
     #if UNIT_CSV
     using System.Globalization;
     using CsvHelper.Configuration;
     #endif
-    #if UNIT_MEMORYPACK
-    using MemoryPack;
-    using MemoryPackSerializer = MemoryPackSerializer;
-    #endif
     #if UNIT_MESSAGEPACK
     using MessagePack;
     using MessagePackSerializer = MessagePackSerializer;
+    #endif
+    #if UNIT_MEMORYPACK
+    using MemoryPack;
+    using MemoryPackSerializer = MemoryPackSerializer;
     #endif
 
     public static class SerializationZenject
@@ -30,6 +38,22 @@ namespace UniT.Data.Serialization.DI
                 container.BindInstance(DefaultJsonSerializerSettings.Value);
             }
             container.BindInterfacesAndSelfTo<JsonSerializer>().AsSingle();
+            #endif
+
+            #if UNIT_YAML
+            if (!container.HasBinding<YamlSerializerOptions>())
+            {
+                container.BindInstance(new YamlSerializerOptions());
+            }
+            container.BindInterfacesAndSelfTo<YamlSerializer>().AsSingle();
+            #endif
+
+            #if UNIT_TOML
+            if (!container.HasBinding<TomlSerializerOptions>())
+            {
+                container.BindInstance(new TomlSerializerOptions());
+            }
+            container.BindInterfacesAndSelfTo<TomlSerializer>().AsSingle();
             #endif
 
             container.BindInterfacesAndSelfTo<UnityObjectSerializer>().AsSingle();
@@ -46,12 +70,8 @@ namespace UniT.Data.Serialization.DI
             container.BindInterfacesAndSelfTo<CsvSerializer>().AsSingle();
             #endif
 
-            #if UNIT_MEMORYPACK
-            if (!container.HasBinding<MemoryPackSerializerOptions>())
-            {
-                container.BindInstance(MemoryPackSerializerOptions.Default);
-            }
-            container.BindInterfacesAndSelfTo<MemoryPackSerializer>().AsSingle();
+            #if UNIT_PROTOBUF
+            container.BindInterfacesAndSelfTo<ProtobufSerializer>().AsSingle();
             #endif
 
             #if UNIT_MESSAGEPACK
@@ -62,8 +82,12 @@ namespace UniT.Data.Serialization.DI
             container.BindInterfacesAndSelfTo<MessagePackSerializer>().AsSingle();
             #endif
 
-            #if UNIT_PROTOBUF
-            container.BindInterfacesAndSelfTo<ProtobufSerializer>().AsSingle();
+            #if UNIT_MEMORYPACK
+            if (!container.HasBinding<MemoryPackSerializerOptions>())
+            {
+                container.BindInstance(MemoryPackSerializerOptions.Default);
+            }
+            container.BindInterfacesAndSelfTo<MemoryPackSerializer>().AsSingle();
             #endif
         }
     }

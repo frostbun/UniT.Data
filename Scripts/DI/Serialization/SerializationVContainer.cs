@@ -7,17 +7,25 @@ namespace UniT.Data.Serialization.DI
     using Newtonsoft.Json;
     using JsonSerializer = JsonSerializer;
     #endif
+    #if UNIT_YAML
+    using SharpYaml;
+    using YamlSerializer = YamlSerializer;
+    #endif
+    #if UNIT_TOML
+    using Tomlyn;
+    using TomlSerializer = TomlSerializer;
+    #endif
     #if UNIT_CSV
     using System.Globalization;
     using CsvHelper.Configuration;
     #endif
-    #if UNIT_MEMORYPACK
-    using MemoryPack;
-    using MemoryPackSerializer = MemoryPackSerializer;
-    #endif
     #if UNIT_MESSAGEPACK
     using MessagePack;
     using MessagePackSerializer = MessagePackSerializer;
+    #endif
+    #if UNIT_MEMORYPACK
+    using MemoryPack;
+    using MemoryPackSerializer = MemoryPackSerializer;
     #endif
 
     public static class SerializationVContainer
@@ -30,6 +38,22 @@ namespace UniT.Data.Serialization.DI
                 builder.RegisterInstance(DefaultJsonSerializerSettings.Value);
             }
             builder.Register<JsonSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            #endif
+
+            #if UNIT_YAML
+            if (!builder.Exists(typeof(YamlSerializerOptions)))
+            {
+                builder.RegisterInstance(new YamlSerializerOptions());
+            }
+            builder.Register<YamlSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            #endif
+
+            #if UNIT_TOML
+            if (!builder.Exists(typeof(TomlSerializerOptions)))
+            {
+                builder.RegisterInstance(new TomlSerializerOptions());
+            }
+            builder.Register<TomlSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             #endif
 
             builder.Register<UnityObjectSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
@@ -46,12 +70,8 @@ namespace UniT.Data.Serialization.DI
             builder.Register<CsvSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             #endif
 
-            #if UNIT_MEMORYPACK
-            if (!builder.Exists(typeof(MemoryPackSerializerOptions)))
-            {
-                builder.RegisterInstance(MemoryPackSerializerOptions.Default);
-            }
-            builder.Register<MemoryPackSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            #if UNIT_PROTOBUF
+            builder.Register<ProtobufSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             #endif
 
             #if UNIT_MESSAGEPACK
@@ -62,8 +82,12 @@ namespace UniT.Data.Serialization.DI
             builder.Register<MessagePackSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             #endif
 
-            #if UNIT_PROTOBUF
-            builder.Register<ProtobufSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            #if UNIT_MEMORYPACK
+            if (!builder.Exists(typeof(MemoryPackSerializerOptions)))
+            {
+                builder.RegisterInstance(MemoryPackSerializerOptions.Default);
+            }
+            builder.Register<MemoryPackSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             #endif
         }
     }

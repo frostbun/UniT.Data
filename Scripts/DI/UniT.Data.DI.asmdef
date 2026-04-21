@@ -31,14 +31,24 @@
       "define": "UNIT_JSON"
     },
     {
+      "name": "org.nuget.sharpyaml",
+      "expression": "",
+      "define": "UNIT_YAML"
+    },
+    {
+      "name": "org.nuget.tomlyn",
+      "expression": "",
+      "define": "UNIT_TOML"
+    },
+    {
       "name": "org.nuget.csvhelper",
       "expression": "",
       "define": "UNIT_CSV"
     },
     {
-      "name": "org.nuget.memorypack",
+      "name": "org.nuget.google.protobuf",
       "expression": "",
-      "define": "UNIT_MEMORYPACK"
+      "define": "UNIT_PROTOBUF"
     },
     {
       "name": "org.nuget.messagepack",
@@ -46,9 +56,9 @@
       "define": "UNIT_MESSAGEPACK"
     },
     {
-      "name": "org.nuget.google.protobuf",
+      "name": "org.nuget.memorypack",
       "expression": "",
-      "define": "UNIT_PROTOBUF"
+      "define": "UNIT_MEMORYPACK"
     }
   ]
 }
