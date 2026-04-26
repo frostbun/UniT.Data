@@ -26,7 +26,7 @@ namespace UniT.Data.Serialization
 
         public override byte[] Serialize(object data)
         {
-            return MemoryPack.MemoryPackSerializer.Serialize(data, this.options);
+            return MemoryPack.MemoryPackSerializer.Serialize(data.GetType(), data, this.options);
         }
     }
 }
