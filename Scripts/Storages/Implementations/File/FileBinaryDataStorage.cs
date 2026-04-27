@@ -31,7 +31,7 @@ namespace UniT.Data.Storage
         public sealed override void Write(string key, byte[] value)
         {
             var path = Path.Combine(PERSISTENT_DATA_PATH, key);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllBytes(path, value);
         }
 
@@ -49,7 +49,7 @@ namespace UniT.Data.Storage
         public sealed override UniTask WriteAsync(string key, byte[] value, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             var path = Path.Combine(PERSISTENT_DATA_PATH, key);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             return File.WriteAllBytesAsync(path, value, cancellationToken).AsUniTask();
         }
 
@@ -72,7 +72,7 @@ namespace UniT.Data.Storage
         public sealed override IEnumerator WriteAsync(string key, byte[] value, Action? callback, IProgress<float>? progress)
         {
             var path = Path.Combine(PERSISTENT_DATA_PATH, key);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             return File.WriteAllBytesAsync(path, value).ToCoroutine(callback);
         }
 
