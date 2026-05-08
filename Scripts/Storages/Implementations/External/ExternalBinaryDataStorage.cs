@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 namespace UniT.Data.Storage
 {
     using System;

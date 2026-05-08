@@ -1,4 +1,4 @@
-﻿#if UNIT_ZENJECT
+#if UNIT_ZENJECT
 #nullable enable
 namespace UniT.Data.Storage.DI
 {

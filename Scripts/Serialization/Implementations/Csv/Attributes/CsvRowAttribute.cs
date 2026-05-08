@@ -1,4 +1,4 @@
-﻿#if UNIT_CSV
+#if UNIT_CSV
 #nullable enable
 namespace UniT.Data
 {

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 namespace UniT.Data.Conversion
 {
     public sealed class SeparatorConfig

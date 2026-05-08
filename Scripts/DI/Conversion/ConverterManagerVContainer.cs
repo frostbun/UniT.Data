@@ -1,4 +1,4 @@
-﻿#if UNIT_VCONTAINER
+#if UNIT_VCONTAINER
 #nullable enable
 namespace UniT.Data.Conversion.DI
 {
