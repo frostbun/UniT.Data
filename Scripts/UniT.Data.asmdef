@@ -3,16 +3,12 @@
   "rootNamespace": "UniT.Data",
   "references": [
     "UniT.Extensions",
+    "UniT.Extensions.UniTask",
     "UniT.Logging",
     "UniT.ResourceManagement",
     "UniTask"
   ],
   "versionDefines": [
-    {
-      "name": "com.cysharp.unitask",
-      "expression": "",
-      "define": "UNIT_UNITASK"
-    },
     {
       "name": "com.unity.nuget.newtonsoft-json",
       "expression": "",

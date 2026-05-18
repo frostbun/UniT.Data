@@ -6,16 +6,12 @@ namespace UniT.Data.Storages
     using System.IO.Compression;
     using System.Linq;
     using System.Security.Cryptography;
+    using System.Threading;
+    using Cysharp.Threading.Tasks;
     using UniT.Extensions;
     using UniT.Logging;
     using UnityEngine;
     using ILogger = UniT.Logging.ILogger;
-    #if UNIT_UNITASK
-    using System.Threading;
-    using Cysharp.Threading.Tasks;
-    #else
-    using System.Collections;
-    #endif
 
     public abstract class ExternalFileVersionManager : IExternalFileVersionManager
     {
@@ -44,103 +40,38 @@ namespace UniT.Data.Storages
 
         private string version = PlayerPrefs.GetString(nameof(ExternalFileVersionManager));
 
-        private bool validating;
-        private bool validated;
+        private bool  validating;
+        private bool? validateResult;
 
-        #region Sync
-
-        string? IExternalFileVersionManager.GetFilePath(string name)
-        {
-            this.logger.Warning("`GetFilePath` only use cached files. Use `GetFilePathAsync` to download new files from remote.");
-            if (this.Version.IsNullOrWhiteSpace())
-            {
-                this.logger.Error("Version not set");
-                return null;
-            }
-            this.ValidateAndExtract();
-            if (!this.validated)
-            {
-                this.logger.Error("Failed to validate zip file. Returning `null`");
-                return null;
-            }
-            return this.GetFilePath(name);
-        }
-
-        private void ValidateAndExtract()
-        {
-            if (this.validated) return;
-            this.logger.Debug($"Validating {this.Version}");
-
-            if (!File.Exists(this.ZipFilePath))
-            {
-                this.logger.Error($"Zip file not found: {this.ZipFilePath}");
-            }
-
-            var hash = ComputeHash(this.ZipFilePath);
-            if (!string.Equals(hash, this.Version, StringComparison.OrdinalIgnoreCase))
-            {
-                this.logger.Error($"Hash mismatch. Expected: {this.Version}, Got: {hash}");
-                File.Delete(this.ZipFilePath);
-                return;
-            }
-
-            this.logger.Debug($"Extracting {this.ZipFilePath} to {this.ExtractDirectory}");
-            ZipFile.ExtractToDirectory(this.ZipFilePath, this.ExtractDirectory, true);
-
-            this.logger.Debug("Validated");
-            this.validated = true;
-
-            static string ComputeHash(string filePath)
-            {
-                using var sha256  = SHA256.Create();
-                using var zipFile = File.OpenRead(filePath);
-                return BitConverter.ToString(sha256.ComputeHash(zipFile)).Replace("-", "");
-            }
-        }
-
-        private string? GetFilePath(string name)
-        {
-            var path = Path.Combine(this.ExtractDirectory, name);
-            return File.Exists(path) ? path : null;
-        }
-
-        #endregion
-
-        #region Async
-
-        #if UNIT_UNITASK
         async UniTask<string?> IExternalFileVersionManager.GetFilePathAsync(string name, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (this.validated) return this.GetFilePath(name);
             if (this.validating) await UniTask.WaitUntil(this, @this => !@this.validating, cancellationToken: cancellationToken);
+            if (this.validateResult is not null) return this.GetFilePath(name);
             this.validating = true;
             try
             {
                 var subProgresses = progress.CreateSubProgresses(2).ToArray();
-                if (!this.validated)
+                try
                 {
-                    try
-                    {
-                        this.Version = await this.FetchVersionAsync(
-                            progress: subProgresses[0],
-                            cancellationToken: cancellationToken
-                        );
-                    }
-                    catch (Exception e) when (e is not OperationCanceledException)
-                    {
-                        this.logger.Exception(e);
-                        this.logger.Error("Failed to fetch version");
-                    }
-                    if (File.Exists(this.ZipFilePath))
-                    {
-                        #if !UNITY_WEBGL
-                        await UniTask.RunOnThreadPool(this.ValidateAndExtract, cancellationToken: cancellationToken);
-                        #else
-                        this.ValidateAndExtract();
-                        #endif
-                    }
+                    this.Version = await this.FetchVersionAsync(
+                        progress: subProgresses[0],
+                        cancellationToken: cancellationToken
+                    );
                 }
-                if (!this.validated && !this.Version.IsNullOrWhiteSpace())
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    this.logger.Exception(e);
+                    this.logger.Error("Failed to fetch version");
+                }
+                if (File.Exists(this.ZipFilePath))
+                {
+                    #if !UNITY_WEBGL
+                    await UniTask.RunOnThreadPool(this.ValidateAndExtract, cancellationToken: cancellationToken);
+                    #else
+                    this.ValidateAndExtract();
+                    #endif
+                }
+                if (this.validateResult is null && !this.Version.IsNullOrWhiteSpace())
                 {
                     try
                     {
@@ -162,9 +93,10 @@ namespace UniT.Data.Storages
                         this.logger.Error("Failed to download zip file");
                     }
                 }
-                if (!this.validated)
+                if (this.validateResult is null)
                 {
                     this.logger.Error("Failed to validate zip file. Returning `null`");
+                    this.validateResult = false;
                 }
                 return this.GetFilePath(name);
             }
@@ -177,64 +109,43 @@ namespace UniT.Data.Storages
         protected abstract UniTask<string> FetchVersionAsync(IProgress<float>? progress, CancellationToken cancellationToken);
 
         protected abstract UniTask DownloadZipFileAsync(string version, string savePath, IProgress<float>? progress, CancellationToken cancellationToken);
-        #else
-        IEnumerator IExternalFileVersionManager.GetFilePathAsync(string name, Action<string?> callback, IProgress<float>? progress)
+
+        private void ValidateAndExtract()
         {
-            if (this.validated)
+            this.logger.Debug($"Validating {this.Version}");
+
+            if (!File.Exists(this.ZipFilePath))
             {
-                callback(this.GetFilePath(name));
-                yield break;
+                this.logger.Error($"Zip file not found: {this.ZipFilePath}");
             }
-            if (this.validating) yield return new WaitUntil(() => !this.validating);
-            this.validating = true;
-            try
+
+            var hash = ComputeHash(this.ZipFilePath);
+            if (!string.Equals(hash, this.Version, StringComparison.OrdinalIgnoreCase))
             {
-                var subProgresses = progress.CreateSubProgresses(2).ToArray();
-                if (!this.validated)
-                {
-                    yield return this.FetchVersionAsync(
-                        callback: result => this.Version = result,
-                        progress: subProgresses[0]
-                    ).Catch(e =>
-                    {
-                        this.logger.Exception(e);
-                        this.logger.Error("Failed to fetch version");
-                    });
-                    if (File.Exists(this.ZipFilePath))
-                    {
-                        yield return CoroutineRunner.Run(this.ValidateAndExtract);
-                    }
-                }
-                if (!this.validated && !this.Version.IsNullOrWhiteSpace())
-                {
-                    yield return this.DownloadZipFileAsync(
-                        version: this.Version,
-                        savePath: this.ZipFilePath,
-                        progress: subProgresses[1]
-                    ).Catch(e =>
-                    {
-                        this.logger.Exception(e);
-                        this.logger.Error("Failed to download zip file");
-                    });
-                    yield return CoroutineRunner.Run(this.ValidateAndExtract);
-                }
-                if (!this.validated)
-                {
-                    this.logger.Error("Failed to validate zip file. Returning `null`");
-                }
-                callback(this.GetFilePath(name));
+                this.logger.Error($"Hash mismatch. Expected: {this.Version}, Got: {hash}");
+                File.Delete(this.ZipFilePath);
+                return;
             }
-            finally
+
+            this.logger.Debug($"Extracting {this.ZipFilePath} to {this.ExtractDirectory}");
+            ZipFile.ExtractToDirectory(this.ZipFilePath, this.ExtractDirectory, true);
+
+            this.logger.Debug("Validated");
+            this.validateResult = true;
+
+            static string ComputeHash(string filePath)
             {
-                this.validating = false;
+                using var sha256  = SHA256.Create();
+                using var zipFile = File.OpenRead(filePath);
+                return BitConverter.ToString(sha256.ComputeHash(zipFile)).Replace("-", string.Empty);
             }
         }
 
-        protected abstract IEnumerator FetchVersionAsync(Action<string> callback, IProgress<float>? progress);
-
-        protected abstract IEnumerator DownloadZipFileAsync(string version, string savePath, IProgress<float>? progress);
-        #endif
-
-        #endregion
+        private string? GetFilePath(string name)
+        {
+            if (this.validateResult is not true) return null;
+            var path = Path.Combine(this.ExtractDirectory, name);
+            return File.Exists(path) ? path : null;
+        }
     }
 }

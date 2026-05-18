@@ -127,7 +127,7 @@ namespace UniT.Data.Serializers
                     if (field == this.keyField) keyValue = value;
                 }
 
-                if (keyValue is { })
+                if (keyValue is not null)
                 {
                     this.data.Add(keyValue, row);
                     this.nestedPopulators.Clear();

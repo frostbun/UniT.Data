@@ -13,7 +13,7 @@ namespace UniT.Data.Storages.DI
 
             container.AddInterfacesAndSelf<AssetBinaryStorage>();
             container.AddInterfacesAndSelf<AssetTextStorage>();
-            container.AddInterfacesAndSelf<AssetBlobStorage>();
+            container.AddInterfacesAndSelf<AssetObjectStorage>();
         }
 
         public static void AddExternalStorages(this DependencyContainer container)

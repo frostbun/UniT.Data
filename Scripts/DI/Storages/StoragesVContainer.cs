@@ -13,7 +13,7 @@ namespace UniT.Data.Storages.DI
 
             builder.Register<AssetBinaryStorage>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             builder.Register<AssetTextStorage>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
-            builder.Register<AssetBlobStorage>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            builder.Register<AssetObjectStorage>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
 
         public static void RegisterExternalStorages(this IContainerBuilder builder)

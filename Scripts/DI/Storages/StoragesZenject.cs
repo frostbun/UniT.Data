@@ -13,7 +13,7 @@ namespace UniT.Data.Storages.DI
 
             container.BindInterfacesAndSelfTo<AssetBinaryStorage>().AsSingle();
             container.BindInterfacesAndSelfTo<AssetTextStorage>().AsSingle();
-            container.BindInterfacesAndSelfTo<AssetBlobStorage>().AsSingle();
+            container.BindInterfacesAndSelfTo<AssetObjectStorage>().AsSingle();
         }
 
         public static void BindExternalStorages(this DiContainer container)

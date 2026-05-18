@@ -2,8 +2,8 @@
   "name": "com.frostbun.unit.data",
   "displayName": "UniT Data",
   "description": "Data Manager for Unity",
-  "version": "2.0.0",
-  "unity": "2022.3",
+  "version": "3.0.0",
+  "unity": "6.3",
   "license": "MIT",
   "author": {
     "name": "frostbun",
@@ -11,8 +11,9 @@
     "url": "https://github.com/frostbun"
   },
   "dependencies": {
-    "com.frostbun.unit.extensions": "2.0.0",
-    "com.frostbun.unit.logging": "2.0.0",
-    "com.frostbun.unit.resourcemanagement": "2.0.0"
+    "com.frostbun.unit.extensions": "3.0.0",
+    "com.frostbun.unit.logging": "3.0.0",
+    "com.frostbun.unit.resourcemanagement": "3.0.0",
+    "com.cysharp.unitask": "2.5.10"
   }
 }

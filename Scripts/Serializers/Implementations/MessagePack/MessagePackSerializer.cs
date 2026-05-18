@@ -17,7 +17,7 @@ namespace UniT.Data.Serializers
             this.options = options;
         }
 
-        protected override bool CanSerialize(Type type) => base.CanSerialize(type) && type.GetCustomAttribute<MessagePackObjectAttribute>() is { };
+        protected override bool CanSerialize(Type type) => base.CanSerialize(type) && type.GetCustomAttribute<MessagePackObjectAttribute>() is not null;
 
         public override object Deserialize(Type type, byte[] rawData)
         {

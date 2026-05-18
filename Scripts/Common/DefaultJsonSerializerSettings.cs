@@ -35,13 +35,10 @@ namespace UniT.Data
 
                 var constructors = type.GetConstructors();
 
-                var constructor = constructors.SingleOrDefault(constructor => constructor.GetCustomAttribute<JsonConstructorAttribute>() is { })
+                var constructor = constructors.SingleOrDefault(constructor => constructor.GetCustomAttribute<JsonConstructorAttribute>() is not null)
                     ?? constructors.MaxByOrDefault(constructor => constructor.GetParameters().Length);
 
-                if (constructor is null)
-                {
-                    return properties.Where(property => property.Writable).ToArray();
-                }
+                if (constructor is null) return properties.Where(property => property.Writable).ToArray();
 
                 var propertyNames = constructor.GetParameters()
                     .Select(parameter => parameter.GetCustomAttribute<JsonPropertyAttribute>() is { PropertyName: { } name } ? name : parameter.Name)

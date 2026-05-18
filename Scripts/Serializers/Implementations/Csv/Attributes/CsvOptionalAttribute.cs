@@ -14,7 +14,7 @@ namespace UniT.Data.Serializers
     {
         public static bool IsCsvOptional(this FieldInfo field)
         {
-            return field.GetCustomAttribute<CsvOptionalAttribute>() is { };
+            return field.GetCustomAttribute<CsvOptionalAttribute>() is not null;
         }
     }
 }

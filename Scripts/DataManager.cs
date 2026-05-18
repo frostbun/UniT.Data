@@ -4,17 +4,14 @@ namespace UniT.Data
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
+    using Cysharp.Threading.Tasks;
     using UniT.Data.Serializers;
     using UniT.Data.Storages;
     using UniT.Extensions;
+    using UniT.Extensions.UniTask;
     using UniT.Logging;
     using UnityEngine.Scripting;
-    #if UNIT_UNITASK
-    using System.Threading;
-    using Cysharp.Threading.Tasks;
-    #else
-    using System.Collections;
-    #endif
 
     public sealed class DataManager : IDataManager
     {
@@ -37,53 +34,18 @@ namespace UniT.Data
 
         #endregion
 
-        #region Sync
-
-        object IDataManager.Load(string key, Type type)
-        {
-            foreach (var (serializer, storage) in this.GetSerializerAndStorage(type).AsSpan())
-            {
-                if (!storage.Contains(key)) continue;
-                var rawData   = storage.Read(key);
-                var savedData = serializer.Deserialize(type, rawData);
-                this.logger.Debug($"Loaded {key}");
-                return savedData;
-            }
-            var newData = type.GetEmptyConstructor()();
-            this.logger.Debug($"Instantiated {key}");
-            return newData;
-        }
-
-        void IDataManager.Save(string key, object data)
-        {
-            foreach (var (serializer, storage) in this.GetSerializerAndStorage(data.GetType()).AsSpan())
-            {
-                if (storage is not IWritableStorage writableStorage) continue;
-                var rawData = serializer.Serialize(data);
-                writableStorage.Write(key, rawData);
-                this.logger.Debug($"Saved {key}");
-                return;
-            }
-            throw new InvalidOperationException($"No writable storage found for {key}");
-        }
-
-        void IDataManager.Flush()
-        {
-            this.storages.OfType<IFlushableStorage>().ForEach(storage => storage.Flush());
-        }
-
-        #endregion
-
-        #region Async
-
-        #if UNIT_UNITASK
         async UniTask<object> IDataManager.LoadAsync(string key, Type type, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             foreach (var (serializer, storage) in this.GetSerializerAndStorage(type))
             {
-                if (!await storage.ContainsAsync(key, cancellationToken: cancellationToken)) continue;
-                var rawData   = await storage.ReadAsync(key, progress, cancellationToken);
-                var savedData = await serializer.DeserializeAsync(type, rawData, cancellationToken: cancellationToken);
+                if (storage is not IReadableStorage readableStorage) continue;
+                if (!await readableStorage.ContainsAsync(key, cancellationToken: cancellationToken)) continue;
+                var rawData = await readableStorage.ReadAsync(key, progress, cancellationToken);
+                #if !UNITY_WEBGL
+                var savedData = await UniTask.RunOnThreadPool(() => serializer.Deserialize(type, rawData), cancellationToken: cancellationToken);
+                #else
+                var savedData = serializer.Deserialize(type, rawData);
+                #endif
                 this.logger.Debug($"Loaded {key}");
                 return savedData;
             }
@@ -97,7 +59,7 @@ namespace UniT.Data
             foreach (var (serializer, storage) in this.GetSerializerAndStorage(data.GetType()))
             {
                 if (storage is not IWritableStorage writableStorage) continue;
-                var rawData = await serializer.SerializeAsync(data, cancellationToken);
+                var rawData = serializer.Serialize(data);
                 await writableStorage.WriteAsync(key, rawData, progress, cancellationToken);
                 this.logger.Debug($"Saved {key}");
                 return;
@@ -113,54 +75,6 @@ namespace UniT.Data
                 cancellationToken
             );
         }
-        #else
-        IEnumerator IDataManager.LoadAsync(string key, Type type, Action<object> callback, IProgress<float>? progress)
-        {
-            foreach (var (serializer, storage) in this.GetSerializerAndStorage(type))
-            {
-                var contains = false;
-                yield return storage.ContainsAsync(key, result => contains = result);
-                if (!contains) continue;
-                var rawData = default(object)!;
-                yield return storage.ReadAsync(key, result => rawData = result, progress);
-                var savedData = default(object)!;
-                yield return serializer.DeserializeAsync(type, rawData, result => savedData = result);
-                this.logger.Debug($"Loaded {key}");
-                callback(savedData);
-                yield break;
-            }
-            var newData = type.GetEmptyConstructor()();
-            this.logger.Debug($"Instantiated {key}");
-            callback(newData);
-        }
-
-        IEnumerator IDataManager.SaveAsync(string key, object data, Action? callback, IProgress<float>? progress)
-        {
-            foreach (var (serializer, storage) in this.GetSerializerAndStorage(data.GetType()))
-            {
-                if (storage is not IWritableStorage writableStorage) continue;
-                var rawData = default(object)!;
-                yield return serializer.SerializeAsync(data, result => rawData = result);
-                yield return writableStorage.WriteAsync(key, rawData, progress: progress);
-                this.logger.Debug($"Saved {key}");
-                yield break;
-            }
-            throw new InvalidOperationException($"No writable storage found for {key}");
-        }
-
-        IEnumerator IDataManager.FlushAsync(Action? callback, IProgress<float>? progress)
-        {
-            return this.storages.OfType<IFlushableStorage>().ForEachAsync(
-                static (storage, progress) => storage.FlushAsync(progress: progress),
-                callback,
-                progress
-            );
-        }
-        #endif
-
-        #endregion
-
-        #region Private
 
         private (ISerializer, IStorage)[] GetSerializerAndStorage(Type type)
         {
@@ -181,7 +95,5 @@ namespace UniT.Data
                 (@this: this, type)
             );
         }
-
-        #endregion
     }
 }
