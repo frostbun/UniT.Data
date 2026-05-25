@@ -12,7 +12,11 @@ namespace UniT.Data.Storages
     using UnityEditor;
     #endif
 
+    #if UNITY_EDITOR
     public class AssetBinaryStorage : Storage<byte[]>, IFlushableStorage
+    #else
+    public class AssetBinaryStorage : Storage<byte[]>, IReadableStorage
+    #endif
     {
         private readonly IAssetsManager assetsManager;
 
@@ -34,29 +38,23 @@ namespace UniT.Data.Storages
             var asset = await this.assetsManager.LoadAsync<TextAsset>(key, progress, cancellationToken);
             var bytes = asset.bytes;
             this.assetsManager.Unload(key);
-            return bytes.Length > 0 ? bytes : throw new InvalidOperationException("Asset is empty");
+            return bytes;
         }
 
+        #if UNITY_EDITOR
         async UniTask IWritableStorage.WriteAsync(string key, object value, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            #if UNITY_EDITOR
             var asset = await this.assetsManager.LoadAsync<TextAsset>(key, progress, cancellationToken);
             var path  = AssetDatabase.GetAssetPath(asset);
             this.assetsManager.Unload(key);
             await File.WriteAllBytesAsync(path, (byte[])value, cancellationToken);
-            #else
-            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
-            #endif
         }
 
         UniTask IFlushableStorage.FlushAsync(IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            #if UNITY_EDITOR
             AssetDatabase.Refresh();
             return UniTask.CompletedTask;
-            #else
-            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
-            #endif
         }
+        #endif
     }
 }

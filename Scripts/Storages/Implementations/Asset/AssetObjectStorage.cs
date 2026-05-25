@@ -11,7 +11,11 @@ namespace UniT.Data.Storages
     using UnityEditor;
     #endif
 
+    #if UNITY_EDITOR
     public class AssetObjectStorage : Storage<Object>, IFlushableStorage
+    #else
+    public class AssetObjectStorage : Storage<Object>, IReadableStorage
+    #endif
     {
         private readonly IAssetsManager assetsManager;
 
@@ -33,25 +37,19 @@ namespace UniT.Data.Storages
             return this.assetsManager.LoadAsync<Object>(key, progress, cancellationToken).ContinueWith(result => (object)result);
         }
 
+        #if UNITY_EDITOR
         UniTask IWritableStorage.WriteAsync(string key, object value, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            #if UNITY_EDITOR
             EditorUtility.SetDirty((Object)value);
             return UniTask.CompletedTask;
-            #else
-            throw new InvalidOperationException("Cannot `Write` outside of the Editor");
-            #endif
         }
 
         UniTask IFlushableStorage.FlushAsync(IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            #if UNITY_EDITOR
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             return UniTask.CompletedTask;
-            #else
-            throw new InvalidOperationException("Cannot `Flush` outside of the Editor");
-            #endif
         }
+        #endif
     }
 }

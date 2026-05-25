@@ -17,7 +17,11 @@ namespace UniT.Data.DI
             builder.RegisterConverterManager();
             builder.RegisterSerializers();
             builder.RegisterAssetStorages();
+            #if !UNITY_WEBGL
             builder.RegisterFileStorages();
+            #else
+            builder.RegisterPlayerPrefsStorages();
+            #endif
             builder.Register<DataManager>(Lifetime.Singleton).AsImplementedInterfaces();
         }
     }

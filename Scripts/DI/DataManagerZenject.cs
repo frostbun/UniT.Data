@@ -17,7 +17,11 @@ namespace UniT.Data.DI
             container.BindConverterManager();
             container.BindSerializers();
             container.BindAssetStorages();
+            #if !UNITY_WEBGL
             container.BindFileStorages();
+            #else
+            container.BindPlayerPrefsStorages();
+            #endif
             container.BindInterfacesTo<DataManager>().AsSingle();
         }
     }
