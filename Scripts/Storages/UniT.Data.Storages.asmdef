@@ -1,0 +1,10 @@
+{
+  "name": "UniT.Data.Storages",
+  "references": [
+    "UniT.Extensions",
+    "UniT.Extensions.UniTask",
+    "UniT.Logging",
+    "UniT.ResourceManagement",
+    "UniTask"
+  ]
+}

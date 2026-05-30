@@ -1,0 +1,17 @@
+{
+  "name": "UniT.Data.Storages.External.InternalDI",
+  "references": [
+    "UniT.Data.Storages.External",
+    "UniT.DI.InternalDI"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.frostbun.unit.di",
+      "expression": "",
+      "define": "UNIT_INTERNALDI"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_INTERNALDI"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "UniT.Data.Serializers.Default",
+  "references": [
+    "UniT.Data.Serializers",
+    "UniT.Data.Converters"
+  ]
+}

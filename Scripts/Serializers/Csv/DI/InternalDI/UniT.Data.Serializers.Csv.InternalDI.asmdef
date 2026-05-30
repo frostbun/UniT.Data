@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Csv.InternalDI",
+  "references": [
+    "UniT.Data.Serializers.Csv",
+    "UniT.DI.InternalDI"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.csvhelper",
+      "expression": "",
+      "define": "UNIT_CSV"
+    },
+    {
+      "name": "com.frostbun.unit.di",
+      "expression": "",
+      "define": "UNIT_INTERNALDI"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_CSV",
+    "UNIT_INTERNALDI"
+  ]
+}

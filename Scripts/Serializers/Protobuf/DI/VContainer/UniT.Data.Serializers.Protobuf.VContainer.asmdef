@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Protobuf.VContainer",
+  "references": [
+    "UniT.Data.Serializers.Protobuf",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.google.protobuf",
+      "expression": "",
+      "define": "UNIT_PROTOBUF"
+    },
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_PROTOBUF",
+    "UNIT_VCONTAINER"
+  ]
+}

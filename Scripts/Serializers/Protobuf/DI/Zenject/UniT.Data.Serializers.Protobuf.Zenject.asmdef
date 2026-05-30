@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Protobuf.Zenject",
+  "references": [
+    "UniT.Data.Serializers.Protobuf",
+    "Zenject"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.google.protobuf",
+      "expression": "",
+      "define": "UNIT_PROTOBUF"
+    },
+    {
+      "name": "com.svermeulen.extenject",
+      "expression": "",
+      "define": "UNIT_ZENJECT"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_PROTOBUF",
+    "UNIT_ZENJECT"
+  ]
+}

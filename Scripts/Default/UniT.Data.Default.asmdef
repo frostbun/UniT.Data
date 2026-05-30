@@ -1,0 +1,12 @@
+{
+  "name": "UniT.Data.Default",
+  "references": [
+    "UniT.Data",
+    "UniT.Extensions",
+    "UniT.Extensions.UniTask",
+    "UniT.Logging",
+    "UniT.Data.Serializers",
+    "UniT.Data.Storages",
+    "UniTask"
+  ]
+}

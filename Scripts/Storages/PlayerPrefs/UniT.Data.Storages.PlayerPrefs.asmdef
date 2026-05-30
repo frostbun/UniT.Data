@@ -1,0 +1,7 @@
+{
+  "name": "UniT.Data.Storages.PlayerPrefs",
+  "references": [
+    "UniT.Data.Storages",
+    "UniTask"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "UniT.Data.Serializers.Unity",
+  "references": [
+    "UniT.Data.Serializers"
+  ]
+}

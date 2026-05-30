@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.MemoryPack.Zenject",
+  "references": [
+    "UniT.Data.Serializers.MemoryPack",
+    "Zenject"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.memorypack",
+      "expression": "",
+      "define": "UNIT_MEMORYPACK"
+    },
+    {
+      "name": "com.svermeulen.extenject",
+      "expression": "",
+      "define": "UNIT_ZENJECT"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_MEMORYPACK",
+    "UNIT_ZENJECT"
+  ]
+}

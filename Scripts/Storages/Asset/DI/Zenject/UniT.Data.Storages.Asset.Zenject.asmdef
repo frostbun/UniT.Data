@@ -1,0 +1,17 @@
+{
+  "name": "UniT.Data.Storages.Asset.Zenject",
+  "references": [
+    "UniT.Data.Storages.Asset",
+    "Zenject"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.svermeulen.extenject",
+      "expression": "",
+      "define": "UNIT_ZENJECT"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_ZENJECT"
+  ]
+}

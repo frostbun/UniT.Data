@@ -1,0 +1,17 @@
+{
+  "name": "UniT.Data.Storages.PlayerPrefs.VContainer",
+  "references": [
+    "UniT.Data.Storages.PlayerPrefs",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_VCONTAINER"
+  ]
+}

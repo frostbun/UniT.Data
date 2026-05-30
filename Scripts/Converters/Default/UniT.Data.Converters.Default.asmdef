@@ -1,0 +1,7 @@
+{
+  "name": "UniT.Data.Converters.Default",
+  "references": [
+    "UniT.Data.Converters",
+    "UniT.Extensions"
+  ]
+}

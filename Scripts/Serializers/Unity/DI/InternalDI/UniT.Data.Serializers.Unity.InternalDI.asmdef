@@ -1,0 +1,17 @@
+{
+  "name": "UniT.Data.Serializers.Unity.InternalDI",
+  "references": [
+    "UniT.Data.Serializers.Unity",
+    "UniT.DI.InternalDI"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.frostbun.unit.di",
+      "expression": "",
+      "define": "UNIT_INTERNALDI"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_INTERNALDI"
+  ]
+}

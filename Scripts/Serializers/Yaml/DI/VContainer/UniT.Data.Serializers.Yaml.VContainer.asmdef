@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Yaml.VContainer",
+  "references": [
+    "UniT.Data.Serializers.Yaml",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.sharpyaml",
+      "expression": "",
+      "define": "UNIT_YAML"
+    },
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_YAML",
+    "UNIT_VCONTAINER"
+  ]
+}

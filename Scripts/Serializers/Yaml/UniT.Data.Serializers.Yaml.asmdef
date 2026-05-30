@@ -1,0 +1,16 @@
+{
+  "name": "UniT.Data.Serializers.Yaml",
+  "references": [
+    "UniT.Data.Serializers"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.sharpyaml",
+      "expression": "",
+      "define": "UNIT_YAML"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_YAML"
+  ]
+}

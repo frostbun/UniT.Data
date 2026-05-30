@@ -1,0 +1,9 @@
+{
+  "name": "UniT.Data.Storages.External",
+  "references": [
+    "UniT.Data.Storages",
+    "UniT.Extensions",
+    "UniT.Logging",
+    "UniTask"
+  ]
+}

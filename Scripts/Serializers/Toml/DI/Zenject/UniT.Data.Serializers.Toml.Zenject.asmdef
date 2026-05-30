@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Toml.Zenject",
+  "references": [
+    "UniT.Data.Serializers.Toml",
+    "Zenject"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.tomlyn",
+      "expression": "",
+      "define": "UNIT_TOML"
+    },
+    {
+      "name": "com.svermeulen.extenject",
+      "expression": "",
+      "define": "UNIT_ZENJECT"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_TOML",
+    "UNIT_ZENJECT"
+  ]
+}

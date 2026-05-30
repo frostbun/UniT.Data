@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Yaml.Zenject",
+  "references": [
+    "UniT.Data.Serializers.Yaml",
+    "Zenject"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.sharpyaml",
+      "expression": "",
+      "define": "UNIT_YAML"
+    },
+    {
+      "name": "com.svermeulen.extenject",
+      "expression": "",
+      "define": "UNIT_ZENJECT"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_YAML",
+    "UNIT_ZENJECT"
+  ]
+}

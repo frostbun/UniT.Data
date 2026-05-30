@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.MessagePack.VContainer",
+  "references": [
+    "UniT.Data.Serializers.MessagePack",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.messagepack",
+      "expression": "",
+      "define": "UNIT_MESSAGEPACK"
+    },
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_MESSAGEPACK",
+    "UNIT_VCONTAINER"
+  ]
+}

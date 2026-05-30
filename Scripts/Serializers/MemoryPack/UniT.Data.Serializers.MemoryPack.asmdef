@@ -1,0 +1,16 @@
+{
+  "name": "UniT.Data.Serializers.MemoryPack",
+  "references": [
+    "UniT.Data.Serializers"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.memorypack",
+      "expression": "",
+      "define": "UNIT_MEMORYPACK"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_MEMORYPACK"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "UniT.Data.Serializers.Default.VContainer",
+  "references": [
+    "UniT.Data.Serializers.Default",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_VCONTAINER"
+  ]
+}

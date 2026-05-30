@@ -1,0 +1,18 @@
+{
+  "name": "UniT.Data.Converters.Default.VContainer",
+  "references": [
+    "UniT.Data.Converters.Default",
+    "UniT.Extensions.Json",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_VCONTAINER"
+  ]
+}

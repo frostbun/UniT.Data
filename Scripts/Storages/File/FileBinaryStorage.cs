@@ -1,0 +1,43 @@
+#nullable enable
+namespace UniT.Data.Storages.File
+{
+    using System;
+    using System.IO;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using Cysharp.Threading.Tasks;
+    using UnityEngine;
+    using UnityEngine.Scripting;
+
+    public class FileBinaryStorage : Storage<byte[]>, IWritableStorage
+    {
+        private static readonly string PersistentDataPath = Application.persistentDataPath;
+
+        [Preserve]
+        public FileBinaryStorage()
+        {
+        }
+
+        protected override bool CanStore(Type type) => typeof(IWritableData).IsAssignableFrom(type);
+
+        UniTask<bool> IReadableStorage.ContainsAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
+        {
+            return UniTask.FromResult(File.Exists(GetPath(key)));
+        }
+
+        UniTask<object> IReadableStorage.ReadAsync(string key, IProgress<float>? progress, CancellationToken cancellationToken)
+        {
+            return File.ReadAllBytesAsync(GetPath(key), cancellationToken).AsUniTask().ContinueWith(result => (object)result);
+        }
+
+        UniTask IWritableStorage.WriteAsync(string key, object value, IProgress<float>? progress, CancellationToken cancellationToken)
+        {
+            var path = GetPath(key);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            return File.WriteAllBytesAsync(path, (byte[])value, cancellationToken).AsUniTask();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string GetPath(string key) => Path.Combine(PersistentDataPath, key);
+    }
+}

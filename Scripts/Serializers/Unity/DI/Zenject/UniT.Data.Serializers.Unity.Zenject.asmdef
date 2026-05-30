@@ -1,0 +1,17 @@
+{
+  "name": "UniT.Data.Serializers.Unity.Zenject",
+  "references": [
+    "UniT.Data.Serializers.Unity",
+    "Zenject"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.svermeulen.extenject",
+      "expression": "",
+      "define": "UNIT_ZENJECT"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_ZENJECT"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Yaml.InternalDI",
+  "references": [
+    "UniT.Data.Serializers.Yaml",
+    "UniT.DI.InternalDI"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.sharpyaml",
+      "expression": "",
+      "define": "UNIT_YAML"
+    },
+    {
+      "name": "com.frostbun.unit.di",
+      "expression": "",
+      "define": "UNIT_INTERNALDI"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_YAML",
+    "UNIT_INTERNALDI"
+  ]
+}

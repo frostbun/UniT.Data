@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Toml.InternalDI",
+  "references": [
+    "UniT.Data.Serializers.Toml",
+    "UniT.DI.InternalDI"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.tomlyn",
+      "expression": "",
+      "define": "UNIT_TOML"
+    },
+    {
+      "name": "com.frostbun.unit.di",
+      "expression": "",
+      "define": "UNIT_INTERNALDI"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_TOML",
+    "UNIT_INTERNALDI"
+  ]
+}

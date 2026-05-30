@@ -1,0 +1,23 @@
+{
+  "name": "UniT.Data.Serializers.Toml.VContainer",
+  "references": [
+    "UniT.Data.Serializers.Toml",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.tomlyn",
+      "expression": "",
+      "define": "UNIT_TOML"
+    },
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_TOML",
+    "UNIT_VCONTAINER"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "UniT.Data.Storages.Asset",
+  "references": [
+    "UniT.Data.Storages",
+    "UniT.ResourceManagement",
+    "UniTask"
+  ]
+}

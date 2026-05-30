@@ -1,0 +1,16 @@
+{
+  "name": "UniT.Data.Serializers.Protobuf",
+  "references": [
+    "UniT.Data.Serializers"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.google.protobuf",
+      "expression": "",
+      "define": "UNIT_PROTOBUF"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_PROTOBUF"
+  ]
+}

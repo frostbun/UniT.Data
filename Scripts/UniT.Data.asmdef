@@ -1,48 +1,7 @@
 {
   "name": "UniT.Data",
-  "rootNamespace": "UniT.Data",
   "references": [
     "UniT.Extensions",
-    "UniT.Extensions.UniTask",
-    "UniT.Logging",
-    "UniT.ResourceManagement",
     "UniTask"
-  ],
-  "versionDefines": [
-    {
-      "name": "com.unity.nuget.newtonsoft-json",
-      "expression": "",
-      "define": "UNIT_JSON"
-    },
-    {
-      "name": "org.nuget.sharpyaml",
-      "expression": "",
-      "define": "UNIT_YAML"
-    },
-    {
-      "name": "org.nuget.tomlyn",
-      "expression": "",
-      "define": "UNIT_TOML"
-    },
-    {
-      "name": "org.nuget.csvhelper",
-      "expression": "",
-      "define": "UNIT_CSV"
-    },
-    {
-      "name": "org.nuget.google.protobuf",
-      "expression": "",
-      "define": "UNIT_PROTOBUF"
-    },
-    {
-      "name": "org.nuget.messagepack",
-      "expression": "",
-      "define": "UNIT_MESSAGEPACK"
-    },
-    {
-      "name": "org.nuget.memorypack",
-      "expression": "",
-      "define": "UNIT_MEMORYPACK"
-    }
   ]
 }

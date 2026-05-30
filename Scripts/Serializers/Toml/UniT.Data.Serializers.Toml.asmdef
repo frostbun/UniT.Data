@@ -1,0 +1,16 @@
+{
+  "name": "UniT.Data.Serializers.Toml",
+  "references": [
+    "UniT.Data.Serializers"
+  ],
+  "versionDefines": [
+    {
+      "name": "org.nuget.tomlyn",
+      "expression": "",
+      "define": "UNIT_TOML"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_TOML"
+  ]
+}

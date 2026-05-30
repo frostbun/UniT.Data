@@ -1,0 +1,7 @@
+{
+  "name": "UniT.Data.Storages.File",
+  "references": [
+    "UniT.Data.Storages",
+    "UniTask"
+  ]
+}

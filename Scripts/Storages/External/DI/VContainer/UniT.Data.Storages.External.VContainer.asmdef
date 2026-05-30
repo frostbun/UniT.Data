@@ -1,0 +1,17 @@
+{
+  "name": "UniT.Data.Storages.External.VContainer",
+  "references": [
+    "UniT.Data.Storages.External",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    }
+  ],
+  "defineConstraints": [
+    "UNIT_VCONTAINER"
+  ]
+}
