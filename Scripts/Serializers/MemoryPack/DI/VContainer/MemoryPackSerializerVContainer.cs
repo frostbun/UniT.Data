@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.MemoryPack.DI
         public static void RegisterMemoryPackSerializer(this IContainerBuilder builder, MemoryPackSerializerOptions options)
         {
             builder.RegisterInstance(options);
-            builder.Register<MemoryPackSerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<MemoryPackSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

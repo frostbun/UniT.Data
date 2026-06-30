@@ -1,0 +1,10 @@
+{
+  "name": "UniT.Data.Storages.ExternalFile",
+  "references": [
+    "UniT.Data.Storages",
+    "UniT.Extensions",
+    "UniT.Logging",
+    "UniT.ResourceManagement",
+    "UniTask"
+  ]
+}

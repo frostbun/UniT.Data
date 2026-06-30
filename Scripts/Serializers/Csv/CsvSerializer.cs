@@ -15,35 +15,37 @@ namespace UniT.Data.Serializers.Csv
 
     public sealed class CsvSerializer : Serializer<string, ICsvData>
     {
-        private readonly IConverterManager converterManager;
         private readonly CsvConfiguration  configuration;
+        private readonly IConverterManager converterManager;
 
         [Preserve]
-        public CsvSerializer(IConverterManager converterManager, CsvConfiguration configuration)
+        public CsvSerializer(CsvConfiguration configuration, IConverterManager converterManager)
         {
-            this.converterManager = converterManager;
             this.configuration    = configuration;
+            this.converterManager = converterManager;
         }
 
         public override ICsvData Deserialize(Type type, string rawData)
         {
-            var       data   = (ICsvData)type.GetEmptyConstructor()();
-            using var reader = new CsvReader(new StringReader(rawData), this.configuration);
-            if (!reader.Read()) return data;
+            using var reader       = new CsvReader(new StringReader(rawData), this.configuration);
+            var       deserializer = new Deserializer(type, reader, this.converterManager);
+
+            deserializer.Reset();
+            if (!reader.Read()) return deserializer.Data;
+
             reader.ReadHeader();
-            var populator = new Populator(this.converterManager, data, reader);
-            while (reader.Read()) populator.Populate();
-            return data;
+            deserializer.Initialize();
+            while (reader.Read()) deserializer.Deserialize();
+            return deserializer.Data;
         }
 
         public override string Serialize(Type type, ICsvData data)
         {
             using var stringWriter = new StringWriter();
             using var writer       = new CsvWriter(stringWriter, this.configuration);
-            var       serializer   = new Serializer(this.converterManager, data, writer);
+            var       serializer   = new Serializer(writer, this.converterManager);
 
-            var hasValue = serializer.MoveNext();
-            if (!hasValue) return string.Empty;
+            if (!serializer.Reset(data)) return string.Empty;
 
             foreach (var header in serializer.GetHeaders())
             {
@@ -51,69 +53,89 @@ namespace UniT.Data.Serializers.Csv
             }
             writer.NextRecord();
 
-            while (hasValue)
+            serializer.Serialize();
+            writer.NextRecord();
+
+            while (serializer.MoveNext())
             {
                 serializer.Serialize();
                 writer.NextRecord();
-                hasValue = serializer.MoveNext();
             }
 
             return stringWriter.ToString();
         }
 
-        private sealed class Populator
+        private sealed class Deserializer
         {
             #region Constructor
 
-            private readonly IConverterManager                                                 converterManager;
-            private readonly ICsvData                                                          data;
-            private readonly CsvReader                                                         reader;
-            private readonly Func<object>                                                      rowConstructor;
-            private readonly FieldInfo                                                         keyField;
-            private readonly IReadOnlyDictionary<FieldInfo, (int Index, IConverter Converter)> normalFields;
-            private readonly IReadOnlyList<FieldInfo>                                          nestedFields;
+            private readonly Func<object>      constructor;
+            private readonly CsvReader         reader;
+            private readonly IConverterManager converterManager;
 
-            private readonly Dictionary<FieldInfo, Populator> nestedPopulators = new();
-
-            public Populator(IConverterManager converterManager, ICsvData data, CsvReader reader)
+            public Deserializer(Type type, CsvReader reader, IConverterManager converterManager)
             {
-                this.converterManager = converterManager;
-                this.data             = data;
+                this.constructor      = type.GetEmptyConstructor();
                 this.reader           = reader;
-
-                var rowType = data.RowType;
-                this.rowConstructor              = rowType.GetEmptyConstructor();
-                var (prefix, key)                = rowType.GetCsvRow();
-                var (normalFields, nestedFields) = rowType.GetCsvFields();
-                this.keyField                    = normalFields.FirstOrDefault(field => key.IsNullOrWhiteSpace() || field.GetCsvColumn(prefix) == key) ?? throw new InvalidOperationException($"{rowType.Name} has no field {key}");
-                this.normalFields = normalFields
-                    .Select((field, state) =>
-                    {
-                        var column = field.GetCsvColumn(state.prefix);
-                        var index  = state.reader.GetFieldIndex(column);
-                        return (field, column, index);
-                    }, (prefix, reader))
-                    .Where((field, column, index, rowType) =>
-                    {
-                        if (index >= 0) return true;
-                        if (field.IsCsvOptional()) return false;
-                        throw new InvalidOperationException($"Column {column} not found in {rowType.Name}. If this is intentional, add [CsvIgnore] or [CsvOptional] attribute to the field.");
-                    }, rowType)
-                    .ToDictionary(
-                        (field, _, _) => field,
-                        (field, _, index) => (index, this.converterManager.GetConverter(field.FieldType))
-                    );
-                this.nestedFields = nestedFields;
+                this.converterManager = converterManager;
             }
 
             #endregion
 
-            public void Populate()
+            public ICsvData Data { get; private set; } = null!;
+
+            private bool initialized;
+
+            private Func<object>                                                      rowConstructor = null!;
+            private FieldInfo                                                         keyField       = null!;
+            private IReadOnlyList<(FieldInfo Field, int Index, IConverter Converter)> normalFields   = null!;
+            private IReadOnlyList<(FieldInfo Field, Deserializer Deserializer)>       nestedFields   = null!;
+
+            public void Reset()
+            {
+                this.Data = (ICsvData)this.constructor();
+            }
+
+            public void Initialize()
+            {
+                if (this.initialized) return;
+
+                var rowType = this.Data.RowType;
+                var (prefix, key)                = rowType.GetCsvRow();
+                var (normalFields, nestedFields) = rowType.GetCsvFields();
+
+                this.rowConstructor = rowType.GetEmptyConstructor();
+
+                this.keyField = normalFields.FirstOrDefault(field => key.IsNullOrWhiteSpace() || field.GetCsvColumn(prefix) == key)
+                    ?? throw new InvalidOperationException($"{rowType.Name} has no field {key}");
+
+                this.normalFields = normalFields
+                    .Select(static (field, state) =>
+                    {
+                        var column    = field.GetCsvColumn(state.prefix);
+                        var index     = state.@this.reader.GetFieldIndex(column);
+                        var converter = state.@this.converterManager.GetConverter(field.FieldType);
+
+                        if (index < 0 && !field.IsCsvOptional()) throw new InvalidOperationException($"Column {column} not found for {state.rowType.Name}. If this is intentional, add [CsvIgnore] or [CsvOptional] attribute to the field.");
+
+                        return (field, index, converter);
+                    }, (@this: this, rowType, prefix))
+                    .WhereSecond(static index => index >= 0)
+                    .ToArray();
+
+                this.nestedFields = nestedFields
+                    .Select(static (field, @this) => (field, new Deserializer(field.FieldType, @this.reader, @this.converterManager)), this)
+                    .ToArray();
+
+                this.initialized = true;
+            }
+
+            public void Deserialize()
             {
                 var keyValue = default(object);
                 var row      = this.rowConstructor();
 
-                foreach (var (field, (index, converter)) in this.normalFields)
+                foreach (var (field, index, converter) in this.normalFields)
                 {
                     var str = this.reader[index];
                     if (str.IsNullOrWhiteSpace())
@@ -123,24 +145,27 @@ namespace UniT.Data.Serializers.Csv
                     }
                     var value = converter.ConvertFromString(field.FieldType, str);
                     field.SetValue(row, value);
-                    if (field == this.keyField) keyValue = value;
+
+                    if (field != this.keyField) continue;
+
+                    keyValue = value;
+
+                    foreach (var (nestedField, nestedDeserializer) in this.nestedFields)
+                    {
+                        nestedDeserializer.Reset();
+                        nestedDeserializer.Initialize();
+                        nestedField.SetValue(row, nestedDeserializer.Data);
+                    }
                 }
 
                 if (keyValue is not null)
                 {
-                    this.data.Add(keyValue, row);
-                    this.nestedPopulators.Clear();
+                    this.Data.Add(keyValue, row);
                 }
 
-                foreach (var field in this.nestedFields)
+                foreach (var (_, nestedDeserializer) in this.nestedFields)
                 {
-                    this.nestedPopulators.GetOrAdd(field, state =>
-                    {
-                        var nestedData      = (ICsvData)state.field.FieldType.GetEmptyConstructor()();
-                        var nestedPopulator = new Populator(state.@this.converterManager, nestedData, state.@this.reader);
-                        state.field.SetValue(state.row, nestedData);
-                        return nestedPopulator;
-                    }, (@this: this, field, row)).Populate();
+                    nestedDeserializer.Deserialize();
                 }
             }
         }
@@ -149,62 +174,83 @@ namespace UniT.Data.Serializers.Csv
         {
             #region Constructor
 
-            private readonly IConverterManager                          converterManager;
-            private readonly IEnumerator                                data;
-            private readonly CsvWriter                                  writer;
-            private readonly IReadOnlyList<string>                      headers;
-            private readonly IReadOnlyDictionary<FieldInfo, IConverter> normalFields;
-            private readonly IReadOnlyList<FieldInfo>                   nestedFields;
+            private readonly CsvWriter         writer;
+            private readonly IConverterManager converterManager;
 
-            private readonly Dictionary<FieldInfo, Serializer>            nestedSerializers = new();
-            private readonly Dictionary<FieldInfo, IReadOnlyList<string>> nestedHeaders     = new();
-
-            public Serializer(IConverterManager converterManager, ICsvData data, CsvWriter writer)
+            public Serializer(CsvWriter writer, IConverterManager converterManager)
             {
-                this.converterManager = converterManager;
-                this.data             = data.GetValues();
                 this.writer           = writer;
-                var rowType = data.RowType;
-                var (prefix, _)                  = rowType.GetCsvRow();
-                var (normalFields, nestedFields) = rowType.GetCsvFields();
-                this.headers                     = normalFields.Select((field, prefix) => field.GetCsvColumn(prefix), prefix).ToArray();
-                this.normalFields = normalFields.ToDictionary(
-                    field => field,
-                    field => this.converterManager.GetConverter(field.FieldType)
-                );
-                this.nestedFields = nestedFields;
+                this.converterManager = converterManager;
             }
 
             #endregion
 
-            public IEnumerable<string> GetHeaders()
+            private ICsvData    data   = null!;
+            private IEnumerator values = null!;
+
+            private bool initialized;
+            private bool started;
+            private bool hasValue;
+
+            private IReadOnlyList<(FieldInfo Field, IConverter Converter)>  normalFields = null!;
+            private IReadOnlyList<(FieldInfo Field, Serializer Serializer)> nestedFields = null!;
+
+            public bool Reset(ICsvData data)
             {
-                return this.headers.Concat(this.nestedFields.SelectMany(field => this.nestedHeaders[field]));
+                this.data     = data;
+                this.values   = data.GetValues();
+                this.started  = false;
+                this.hasValue = false;
+
+                this.Initialize();
+
+                return this.MoveNext();
             }
 
-            private bool hasValue;
+            private void Initialize()
+            {
+                if (this.initialized) return;
+
+                var (normalFields, nestedFields) = this.data.RowType.GetCsvFields();
+
+                this.normalFields = normalFields
+                    .Select(static (field, converterManager) => (field, converterManager.GetConverter(field.FieldType)), this.converterManager)
+                    .ToArray();
+
+                this.nestedFields = nestedFields
+                    .Select(static (field, @this) => (field, new Serializer(@this.writer, @this.converterManager)), this)
+                    .ToArray();
+
+                this.initialized = true;
+            }
+
+            public IEnumerable<string> GetHeaders()
+            {
+                return this.normalFields
+                    .SelectFirsts((field, prefix) => field.GetCsvColumn(prefix), this.data.RowType.GetCsvRow().Prefix)
+                    .Concat(this.nestedFields.SelectSeconds().SelectMany(nestedSerializer => nestedSerializer.GetHeaders()));
+            }
 
             public bool MoveNext()
             {
                 if (
-                    this.nestedSerializers.Count > 0
-                    && this.nestedFields.Aggregate(false, (hasNestedValue, field) => hasNestedValue || this.nestedSerializers[field].MoveNext())
+                    this.started
+                    && this.nestedFields.SelectSeconds().Aggregate(false, (hasNestedValue, nestedSerializer) => nestedSerializer.MoveNext() || hasNestedValue)
                 )
                     return true;
 
-                this.hasValue = this.data.MoveNext();
+                this.hasValue = this.values.MoveNext();
                 if (!this.hasValue)
                 {
-                    (this.data as IDisposable)?.Dispose();
+                    (this.values as IDisposable)?.Dispose();
                     return false;
                 }
+                this.started = true;
 
-                var row = this.data.Current;
-                foreach (var field in this.nestedFields)
+                var row = this.values.Current;
+                foreach (var (nestedField, nestedSerializer) in this.nestedFields)
                 {
-                    var serializer = this.nestedSerializers[field] = new(this.converterManager, (ICsvData)field.GetValue(row), this.writer);
-                    serializer.MoveNext();
-                    this.nestedHeaders.TryAdd(field, serializer => serializer.GetHeaders().ToArray(), serializer);
+                    nestedSerializer.Reset((ICsvData)nestedField.GetValue(row));
                 }
                 return true;
             }
@@ -213,7 +259,7 @@ namespace UniT.Data.Serializers.Csv
             {
                 if (this.hasValue)
                 {
-                    var row = this.data.Current;
+                    var row = this.values.Current;
                     foreach (var (field, converter) in this.normalFields)
                     {
                         var value = field.GetValue(row);
@@ -234,9 +280,9 @@ namespace UniT.Data.Serializers.Csv
                     }
                 }
 
-                foreach (var field in this.nestedFields)
+                foreach (var (_, nestedSerializer) in this.nestedFields)
                 {
-                    this.nestedSerializers[field].Serialize();
+                    nestedSerializer.Serialize();
                 }
             }
         }

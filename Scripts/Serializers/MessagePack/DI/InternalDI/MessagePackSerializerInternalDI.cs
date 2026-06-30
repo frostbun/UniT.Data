@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.MessagePack.DI
         public static void AddMessagePackSerializer(this DependencyContainer container, MessagePackSerializerOptions options)
         {
             container.Add(options);
-            container.AddInterfaces<MessagePackSerializer>();
+            container.AddInterfacesAndSelf<MessagePackSerializer>();
         }
     }
 }

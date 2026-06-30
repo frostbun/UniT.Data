@@ -2,7 +2,6 @@
   "name": "UniT.Data.Converters.Default.VContainer",
   "references": [
     "UniT.Data.Converters.Default",
-    "UniT.Extensions.Json",
     "VContainer"
   ],
   "versionDefines": [

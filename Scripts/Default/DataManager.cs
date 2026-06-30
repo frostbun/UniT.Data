@@ -20,13 +20,13 @@ namespace UniT.Data.Default
         private readonly IReadOnlyList<IStorage>    storages;
         private readonly ILogger                    logger;
 
-        private readonly Dictionary<Type, (ISerializer, IStorage)[]> serializerAndStorageCache = new();
+        private readonly Dictionary<Type, IReadOnlyList<(ISerializer, IStorage)>> serializerAndStorageCache = new();
 
         [Preserve]
-        public DataManager(IEnumerable<ISerializer> serializers, IEnumerable<IStorage> storages, ILoggerManager loggerManager)
+        public DataManager(IReadOnlyList<ISerializer> serializers, IReadOnlyList<IStorage> storages, ILoggerManager loggerManager)
         {
-            this.serializers = serializers.ToArray();
-            this.storages    = storages.ToArray();
+            this.serializers = serializers;
+            this.storages    = storages;
             this.logger      = loggerManager.GetLogger(this);
             this.logger.Debug("Constructed");
         }
@@ -39,13 +39,13 @@ namespace UniT.Data.Default
             {
                 if (storage is not IReadableStorage readableStorage) continue;
                 if (!await readableStorage.ContainsAsync(key, cancellationToken: cancellationToken)) continue;
-                var rawData = await readableStorage.ReadAsync(key, progress, cancellationToken);
+                var rawData = await readableStorage.ReadAsync(key, serializer.RawDataType, progress, cancellationToken);
                 #if !UNITY_WEBGL
                 var savedData = await UniTask.RunOnThreadPool(() => serializer.Deserialize(type, rawData), cancellationToken: cancellationToken);
                 #else
                 var savedData = serializer.Deserialize(type, rawData);
                 #endif
-                this.logger.Debug($"Loaded {key}");
+                this.logger.Debug($"Loaded {key} - {serializer.GetType().Name} - {storage.GetType().Name}");
                 return savedData;
             }
             var newData = type.GetEmptyConstructor()();
@@ -59,23 +59,23 @@ namespace UniT.Data.Default
             {
                 if (storage is not IWritableStorage writableStorage) continue;
                 var rawData = serializer.Serialize(data.GetType(), data);
-                await writableStorage.WriteAsync(key, rawData, progress, cancellationToken);
-                this.logger.Debug($"Saved {key}");
+                await writableStorage.WriteAsync(key, rawData, serializer.RawDataType, progress, cancellationToken);
+                this.logger.Debug($"Saved {key} - {serializer.GetType().Name} - {storage.GetType().Name}");
                 return;
             }
             throw new InvalidOperationException($"No writable storage found for {key}");
         }
 
-        UniTask IDataManager.FlushAsync(IProgress<float>? progress, CancellationToken cancellationToken)
+        void IDataManager.Flush()
         {
-            return this.storages.OfType<IFlushableStorage>().ForEachAsync(
-                static (storage, progress, cancellationToken) => storage.FlushAsync(progress, cancellationToken),
-                progress,
-                cancellationToken
-            );
+            foreach (var storage in this.storages.OfType<IWritableStorage>())
+            {
+                storage.Flush();
+                this.logger.Debug($"Flushed {storage.GetType().Name}");
+            }
         }
 
-        private (ISerializer, IStorage)[] GetSerializerAndStorage(Type type)
+        private IReadOnlyList<(ISerializer, IStorage)> GetSerializerAndStorage(Type type)
         {
             return this.serializerAndStorageCache.GetOrAdd(
                 type,
@@ -83,12 +83,12 @@ namespace UniT.Data.Default
                 {
                     var result = IterTools.Product(
                             state.@this.serializers.Where(static (serializer, type) => serializer.CanSerialize(type), state.type),
-                            state.@this.storages.Where(static (storage,       type) => storage.CanStore(type), state.type)
+                            state.@this.storages.Where(static (storage,       type) => typeof(IWritableData).IsAssignableFrom(type) == storage is IWritableStorage, state.type)
                         )
-                        .Where(static (serializer, storage) => serializer.RawDataType == storage.RawDataType)
+                        .Where(static (serializer, storage) => storage.CanStore(serializer.RawDataType))
                         .Reverse()
                         .ToArray();
-                    if (result.Length is 0) throw new InvalidOperationException($"No serializer or storage found for {state.type.Name}");
+                    if (result.Length is 0) throw new KeyNotFoundException($"No serializer or storage found for {state.type.Name}");
                     return result;
                 },
                 (@this: this, type)

@@ -2,7 +2,6 @@
   "name": "UniT.Data.Converters.Default.InternalDI",
   "references": [
     "UniT.Data.Converters.Default",
-    "UniT.Extensions.Json",
     "UniT.DI.InternalDI"
   ],
   "versionDefines": [

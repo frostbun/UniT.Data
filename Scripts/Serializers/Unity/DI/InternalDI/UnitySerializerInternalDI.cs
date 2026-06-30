@@ -7,7 +7,7 @@ namespace UniT.Data.Serializers.Unity.DI
     {
         public static void AddUnitySerializer(this DependencyContainer container)
         {
-            container.AddInterfaces<UnitySerializer>();
+            container.AddInterfacesAndSelf<UnitySerializer>();
         }
     }
 }

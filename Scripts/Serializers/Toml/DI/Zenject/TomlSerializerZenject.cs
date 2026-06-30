@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.Toml.DI
         public static void BindTomlSerializer(this DiContainer container, TomlSerializerOptions options)
         {
             container.BindInstance(options);
-            container.BindInterfacesTo<TomlSerializer>().AsSingle();
+            container.BindInterfacesAndSelfTo<TomlSerializer>().AsSingle();
         }
     }
 }

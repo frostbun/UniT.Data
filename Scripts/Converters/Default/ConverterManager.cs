@@ -2,6 +2,7 @@
 namespace UniT.Data.Converters.Default
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using UniT.Extensions;
@@ -11,25 +12,22 @@ namespace UniT.Data.Converters.Default
     {
         private readonly IReadOnlyList<IConverter> converters;
 
-        private readonly Dictionary<Type, IConverter> converterCache = new();
+        private readonly ConcurrentDictionary<Type, IConverter> converterCache = new();
 
         [Preserve]
-        public ConverterManager(IEnumerable<IConverter> converters)
+        public ConverterManager(IReadOnlyList<IConverter> converters)
         {
-            this.converters = converters.ToArray();
+            this.converters = converters;
             foreach (var converter in this.converters) converter.Manager = this;
         }
 
         IConverter IConverterManager.GetConverter(Type type)
         {
-            lock (this.converterCache)
+            return this.converterCache.GetOrAdd(type, static state =>
             {
-                return this.converterCache.GetOrAdd(type, static state =>
-                {
-                    return state.converters.LastOrDefault(converter => converter.CanConvert(state.type))
-                        ?? throw new ArgumentOutOfRangeException(nameof(state.type), state.type, $"No converter found for {state.type.Name}");
-                }, (this.converters, type));
-            }
+                return state.converters.LastOrDefault(converter => converter.CanConvert(state.type))
+                    ?? throw new KeyNotFoundException($"No converter found for {state.type.Name}");
+            }, (this.converters, type));
         }
     }
 }

@@ -19,7 +19,7 @@ namespace UniT.Data.Serializers.Csv.DI
         public static void RegisterCsvSerializer(this IContainerBuilder builder, CsvConfiguration configuration)
         {
             builder.RegisterInstance(configuration);
-            builder.Register<CsvSerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<CsvSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

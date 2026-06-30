@@ -3,9 +3,6 @@ namespace UniT.Data.Converters.Default.DI
 {
     using System;
     using System.Globalization;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-    using UniT.Extensions;
     using VContainer;
     using JsonConverter = JsonConverter;
 
@@ -24,27 +21,14 @@ namespace UniT.Data.Converters.Default.DI
         {
             builder.RegisterDefaultConverters(
                 separatorConfig: new(),
-                formatProvider: CultureInfo.InvariantCulture,
-                jsonSerializerSettings: new()
-                {
-                    Culture                = CultureInfo.InvariantCulture,
-                    TypeNameHandling       = TypeNameHandling.Auto,
-                    ReferenceLoopHandling  = ReferenceLoopHandling.Ignore,
-                    ObjectCreationHandling = ObjectCreationHandling.Replace,
-                    ContractResolver       = new WritablePropertyOnlyContractResolver(),
-                    Converters = new Newtonsoft.Json.JsonConverter[]
-                    {
-                        new StringEnumConverter(),
-                    },
-                }
+                formatProvider: CultureInfo.InvariantCulture
             );
         }
 
-        public static void RegisterDefaultConverters(this IContainerBuilder builder, SeparatorConfig separatorConfig, IFormatProvider formatProvider, JsonSerializerSettings jsonSerializerSettings)
+        public static void RegisterDefaultConverters(this IContainerBuilder builder, SeparatorConfig separatorConfig, IFormatProvider formatProvider)
         {
             builder.RegisterInstance(separatorConfig);
             builder.RegisterInstance(formatProvider);
-            builder.RegisterInstance(jsonSerializerSettings);
             builder.Register<JsonConverter>(Lifetime.Singleton).AsImplementedInterfaces();
 
             #region Primitives

@@ -2,29 +2,26 @@
 namespace UniT.Data.Converters.Default
 {
     using System;
-    using Newtonsoft.Json;
+    using UnityEngine;
     using UnityEngine.Scripting;
 
     public sealed class JsonConverter : Converter
     {
-        private readonly JsonSerializerSettings settings;
-
         [Preserve]
-        public JsonConverter(JsonSerializerSettings settings)
+        public JsonConverter()
         {
-            this.settings = settings;
         }
 
         protected override bool CanConvert(Type type) => true;
 
         protected override object ConvertFromString(Type type, string str)
         {
-            return JsonConvert.DeserializeObject(str, type, this.settings)!;
+            return JsonUtility.FromJson(str, type);
         }
 
         protected override string ConvertToString(Type type, object obj)
         {
-            return JsonConvert.SerializeObject(obj, this.settings);
+            return JsonUtility.ToJson(obj);
         }
     }
 }

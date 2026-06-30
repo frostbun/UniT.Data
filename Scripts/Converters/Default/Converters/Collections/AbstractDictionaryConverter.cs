@@ -3,7 +3,6 @@ namespace UniT.Data.Converters.Default
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using UnityEngine.Scripting;
 
     /// <summary>
@@ -11,18 +10,17 @@ namespace UniT.Data.Converters.Default
     /// </summary>
     public sealed class AbstractDictionaryConverter : Converter
     {
-        private static readonly IReadOnlyCollection<Type> SupportedTypes = new HashSet<Type>
-        {
-            typeof(IDictionary<,>),
-            typeof(IReadOnlyDictionary<,>),
-        };
-
         [Preserve]
         public AbstractDictionaryConverter()
         {
         }
 
-        protected override bool CanConvert(Type type) => type.IsGenericType && SupportedTypes.Contains(type.GetGenericTypeDefinition());
+        protected override bool CanConvert(Type type)
+        {
+            if (!type.IsGenericType) return false;
+            type = type.GetGenericTypeDefinition();
+            return type == typeof(IReadOnlyDictionary<,>) || type == typeof(IDictionary<,>);
+        }
 
         protected override object? GetDefaultValue(Type type)
         {

@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.MemoryPack.DI
         public static void AddMemoryPackSerializer(this DependencyContainer container, MemoryPackSerializerOptions options)
         {
             container.Add(options);
-            container.AddInterfaces<MemoryPackSerializer>();
+            container.AddInterfacesAndSelf<MemoryPackSerializer>();
         }
     }
 }

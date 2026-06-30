@@ -7,7 +7,7 @@ namespace UniT.Data.Serializers.Default.DI
     {
         public static void RegisterDefaultSerializer(this IContainerBuilder builder)
         {
-            builder.Register<DefaultSerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<DefaultSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

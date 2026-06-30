@@ -19,7 +19,7 @@ namespace UniT.Data.Serializers.Csv.DI
         public static void AddCsvSerializer(this DependencyContainer container, CsvConfiguration configuration)
         {
             container.Add(configuration);
-            container.AddInterfaces<CsvSerializer>();
+            container.AddInterfacesAndSelf<CsvSerializer>();
         }
     }
 }

@@ -13,21 +13,17 @@ namespace UniT.Data.Converters.Default
     /// </summary>
     public sealed class CollectionConverter : Converter
     {
-        private static readonly IReadOnlyCollection<Type> SupportedTypes = new HashSet<Type>
-        {
-            typeof(List<>),
-            typeof(ReadOnlyCollection<>),
-            typeof(HashSet<>),
-            typeof(Stack<>),
-            typeof(Queue<>),
-        };
-
         [Preserve]
         public CollectionConverter()
         {
         }
 
-        protected override bool CanConvert(Type type) => type.IsGenericType && SupportedTypes.Contains(type.GetGenericTypeDefinition());
+        protected override bool CanConvert(Type type)
+        {
+            if (!type.IsGenericType) return false;
+            type = type.GetGenericTypeDefinition();
+            return type == typeof(ReadOnlyCollection<>) || type == typeof(List<>) || type == typeof(HashSet<>) || type == typeof(Stack<>) || type == typeof(Queue<>) || type == typeof(Collection<>);
+        }
 
         protected override object? GetDefaultValue(Type type)
         {

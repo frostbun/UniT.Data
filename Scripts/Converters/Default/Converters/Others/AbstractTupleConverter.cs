@@ -37,7 +37,13 @@ namespace UniT.Data.Converters.Default
             var items     = str.Split(this.separator);
             var itemType  = SupportedTypes[type];
             var converter = this.Manager.GetConverter(itemType);
-            return Activator.CreateInstance(type, items.Select(item => converter.ConvertFromString(itemType, item)).ToArray());
+            return Activator.CreateInstance(
+                type,
+                items.Select(
+                    static (item, state) => state.converter.ConvertFromString(state.itemType, item),
+                    (itemType, converter)
+                ).ToArray()
+            );
         }
 
         protected override string ConvertToString(Type type, object obj)
@@ -52,7 +58,7 @@ namespace UniT.Data.Converters.Default
                 Vector3Int vector3Int => new object[] { vector3Int.x, vector3Int.y, vector3Int.z },
                 Color color           => new object[] { color.r, color.g, color.b, color.a },
                 Color32 color32       => new object[] { color32.r, color32.g, color32.b, color32.a },
-                _                     => throw new InvalidOperationException($"Unsupported type: {obj.GetType()}"),
+                _                     => throw new NotSupportedException($"Unsupported type: {obj.GetType().Name}"),
             };
             var itemType  = SupportedTypes[type];
             var converter = this.Manager.GetConverter(itemType);

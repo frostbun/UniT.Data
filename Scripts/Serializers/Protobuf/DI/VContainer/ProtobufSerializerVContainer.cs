@@ -7,7 +7,7 @@ namespace UniT.Data.Serializers.Protobuf.DI
     {
         public static void RegisterProtobufSerializer(this IContainerBuilder builder)
         {
-            builder.Register<ProtobufSerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<ProtobufSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

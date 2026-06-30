@@ -9,6 +9,6 @@ namespace UniT.Data.Storages
     {
         public UniTask<bool> ContainsAsync(string key, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
 
-        public UniTask<object> ReadAsync(string key, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
+        public UniTask<object> ReadAsync(string key, Type type, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
     }
 }

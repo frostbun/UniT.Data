@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.Toml.DI
         public static void RegisterTomlSerializer(this IContainerBuilder builder, TomlSerializerOptions options)
         {
             builder.RegisterInstance(options);
-            builder.Register<TomlSerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<TomlSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

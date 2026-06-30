@@ -7,7 +7,7 @@ namespace UniT.Data.Serializers.Protobuf.DI
     {
         public static void BindProtobufSerializer(this DiContainer container)
         {
-            container.BindInterfacesTo<ProtobufSerializer>().AsSingle();
+            container.BindInterfacesAndSelfTo<ProtobufSerializer>().AsSingle();
         }
     }
 }

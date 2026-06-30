@@ -13,7 +13,7 @@ namespace UniT.Data
 
         public UniTask SaveAsync(string key, object data, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
 
-        public UniTask FlushAsync(IProgress<float>? progress = null, CancellationToken cancellationToken = default);
+        public void Flush();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<T> LoadAsync<T>(string key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : notnull => this.LoadAsync(key, typeof(T), progress, cancellationToken).ContinueWith(data => (T)data);

@@ -5,8 +5,6 @@ namespace UniT.Data.Storages
 
     public interface IStorage
     {
-        public Type RawDataType { get; }
-
         public bool CanStore(Type type);
     }
 }

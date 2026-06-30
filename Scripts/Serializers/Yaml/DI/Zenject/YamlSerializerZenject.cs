@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.Yaml.DI
         public static void BindYamlSerializer(this DiContainer container, YamlSerializerOptions options)
         {
             container.BindInstance(options);
-            container.BindInterfacesTo<YamlSerializer>().AsSingle();
+            container.BindInterfacesAndSelfTo<YamlSerializer>().AsSingle();
         }
     }
 }

@@ -7,7 +7,7 @@ namespace UniT.Data.Serializers.Unity.DI
     {
         public static void RegisterUnitySerializer(this IContainerBuilder builder)
         {
-            builder.Register<UnitySerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<UnitySerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

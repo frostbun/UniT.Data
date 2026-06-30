@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.Toml.DI
         public static void AddTomlSerializer(this DependencyContainer container, TomlSerializerOptions options)
         {
             container.Add(options);
-            container.AddInterfaces<TomlSerializer>();
+            container.AddInterfacesAndSelf<TomlSerializer>();
         }
     }
 }

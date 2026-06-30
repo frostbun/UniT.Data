@@ -54,17 +54,19 @@ namespace UniT.Data.Converters.Default
             var valueType      = type.GetGenericArguments()[1];
             var keyConverter   = this.Manager.GetConverter(keyType);
             var valueConverter = this.Manager.GetConverter(valueType);
+            var dictionary     = (IDictionary)obj;
             return this.Manager.ConvertToString(
                 ArrayType,
-                ((IDictionary)obj).Cast<DictionaryEntry>()
-                .Select(
-                    static (kv, state) => state.separator.Wrap(
-                        state.keyConverter.ConvertToString(state.keyType, kv.Key),
-                        state.valueConverter.ConvertToString(state.valueType, kv.Value)
+                IterTools.Zip(
+                    dictionary.Keys.Cast<object>(),
+                    dictionary.Values.Cast<object>()
+                ).Select(
+                    static (key, value, state) => state.separator.Wrap(
+                        state.keyConverter.ConvertToString(state.keyType, key),
+                        state.valueConverter.ConvertToString(state.valueType, value)
                     ),
-                    (this.separator, keyConverter, keyType, valueConverter, valueType)
-                )
-                .ToArray()
+                    (this.separator, keyType, valueType, keyConverter, valueConverter)
+                ).ToArray()
             );
         }
     }

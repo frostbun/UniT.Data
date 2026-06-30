@@ -15,13 +15,11 @@ namespace UniT.Data.Converters
         {
             try
             {
-                var result     = this.ConvertFromString(type, str);
-                var resultType = result.GetType();
-                return type.IsAssignableFrom(resultType) ? result : throw new InvalidOperationException($"Expected '{type.Name}', got '{resultType.Name}'");
+                return this.ConvertFromString(type, str);
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Cannot convert '{str}' to '{type.Name}' with '{this.GetType().Name}'", e);
+                throw new InvalidOperationException($"Cannot convert '{str}' to '{type.Name}' with '{this.GetType().Name}': {e.Message}");
             }
         }
 
@@ -33,7 +31,7 @@ namespace UniT.Data.Converters
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Cannot convert '{type.Name}' '{obj}' to string with '{this.GetType().Name}'", e);
+                throw new InvalidOperationException($"Cannot convert '{type.Name}' '{obj}' to string with '{this.GetType().Name}': {e.Message}");
             }
         }
 

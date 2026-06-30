@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.Yaml.DI
         public static void RegisterYamlSerializer(this IContainerBuilder builder, YamlSerializerOptions options)
         {
             builder.RegisterInstance(options);
-            builder.Register<YamlSerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<YamlSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

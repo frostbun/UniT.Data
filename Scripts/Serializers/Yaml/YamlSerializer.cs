@@ -4,6 +4,7 @@ namespace UniT.Data.Serializers.Yaml
     using System;
     using SharpYaml;
     using UnityEngine.Scripting;
+    using BaseSerializer = SharpYaml.YamlSerializer;
 
     public sealed class YamlSerializer : Serializer<string, object>
     {
@@ -17,12 +18,22 @@ namespace UniT.Data.Serializers.Yaml
 
         public override object Deserialize(Type type, string rawData)
         {
-            return SharpYaml.YamlSerializer.Deserialize(rawData, type, this.options)!;
+            return BaseSerializer.Deserialize(rawData, type, this.options)!;
         }
 
         public override string Serialize(Type type, object data)
         {
-            return SharpYaml.YamlSerializer.Serialize(data, this.options);
+            return BaseSerializer.Serialize(data, type, this.options);
+        }
+
+        public override T Deserialize<T>(string rawData)
+        {
+            return BaseSerializer.Deserialize<T>(rawData, this.options)!;
+        }
+
+        public override string Serialize<T>(T data)
+        {
+            return BaseSerializer.Serialize(data, this.options);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace UniT.Data.Serializers.Default.DI
     {
         public static void BindDefaultSerializer(this DiContainer container)
         {
-            container.BindInterfacesTo<DefaultSerializer>().AsSingle();
+            container.BindInterfacesAndSelfTo<DefaultSerializer>().AsSingle();
         }
     }
 }

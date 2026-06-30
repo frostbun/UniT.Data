@@ -7,7 +7,7 @@ namespace UniT.Data.Serializers.Default.DI
     {
         public static void AddDefaultSerializer(this DependencyContainer container)
         {
-            container.AddInterfaces<DefaultSerializer>();
+            container.AddInterfacesAndSelf<DefaultSerializer>();
         }
     }
 }

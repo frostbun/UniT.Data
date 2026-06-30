@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.Yaml.DI
         public static void AddYamlSerializer(this DependencyContainer container, YamlSerializerOptions options)
         {
             container.Add(options);
-            container.AddInterfaces<YamlSerializer>();
+            container.AddInterfacesAndSelf<YamlSerializer>();
         }
     }
 }

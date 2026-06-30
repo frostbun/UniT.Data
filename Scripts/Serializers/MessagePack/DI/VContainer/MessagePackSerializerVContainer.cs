@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.MessagePack.DI
         public static void RegisterMessagePackSerializer(this IContainerBuilder builder, MessagePackSerializerOptions options)
         {
             builder.RegisterInstance(options);
-            builder.Register<MessagePackSerializer>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<MessagePackSerializer>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
         }
     }
 }

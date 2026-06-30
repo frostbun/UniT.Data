@@ -19,7 +19,7 @@ namespace UniT.Data.Serializers.Csv.DI
         public static void BindCsvSerializer(this DiContainer container, CsvConfiguration configuration)
         {
             container.BindInstance(configuration);
-            container.BindInterfacesTo<CsvSerializer>().AsSingle();
+            container.BindInterfacesAndSelfTo<CsvSerializer>().AsSingle();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace UniT.Data.Serializers.MessagePack.DI
         public static void BindMessagePackSerializer(this DiContainer container, MessagePackSerializerOptions options)
         {
             container.BindInstance(options);
-            container.BindInterfacesTo<MessagePackSerializer>().AsSingle();
+            container.BindInterfacesAndSelfTo<MessagePackSerializer>().AsSingle();
         }
     }
 }

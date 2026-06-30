@@ -28,5 +28,15 @@ namespace UniT.Data.Serializers.MessagePack
         {
             return BaseSerializer.Serialize(type, data, this.options);
         }
+
+        public override T Deserialize<T>(byte[] rawData)
+        {
+            return BaseSerializer.Deserialize<T>(rawData, this.options)!;
+        }
+
+        public override byte[] Serialize<T>(T data)
+        {
+            return BaseSerializer.Serialize(data, this.options);
+        }
     }
 }
